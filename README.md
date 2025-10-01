@@ -15,7 +15,7 @@ PyFluff is a complete rewrite of the original [bluefluff](https://github.com/Jei
 * Access debug menus on Furby's LCD eyes
 * Build custom applications and automations
 
-> [!WARNING] Thar be (Fluffy) Dragons
+> [!WARNING]
 > I used GitHub Copilot to port the Bluefluff project over to Python for me
 > which it did in a one-shot prompt. However that does mean there is code
 > here which I haven't fully tested yet. I'm publishing now while I work on
