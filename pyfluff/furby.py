@@ -215,7 +215,7 @@ class FurbyConnect:
             raise RuntimeError("Not connected to Furby")
 
         await self.client.write_gatt_char(
-            FurbyCharacteristic.GENERALPLUS_WRITE, data, response=True
+            FurbyCharacteristic.GENERALPLUS_WRITE, data, response=False
         )
         logger.debug(f"GP write: {data.hex()}")
 
@@ -225,7 +225,7 @@ class FurbyConnect:
             raise RuntimeError("Not connected to Furby")
 
         await self.client.write_gatt_char(
-            FurbyCharacteristic.NORDIC_WRITE, data, response=True
+            FurbyCharacteristic.NORDIC_WRITE, data, response=False
         )
         logger.debug(f"Nordic write: {data.hex()}")
 
@@ -235,7 +235,7 @@ class FurbyConnect:
             raise RuntimeError("Not connected to Furby")
 
         await self.client.write_gatt_char(
-            FurbyCharacteristic.FILE_WRITE, data, response=True
+            FurbyCharacteristic.FILE_WRITE, data, response=False
         )
         logger.debug(f"File write: {data.hex()}")
 

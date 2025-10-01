@@ -13,6 +13,7 @@ from typing import AsyncIterator
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, UploadFile
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 
 from pyfluff.furby import FurbyConnect
 from pyfluff.dlc import DLCManager
@@ -41,23 +42,20 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Lifespan context manager for FastAPI app."""
     global furby
 
-    # Startup: Connect to Furby
+    # Startup: Don't auto-connect, let user connect via UI
     logger.info("PyFluff server starting up...")
-    furby = FurbyConnect()
-
-    try:
-        await furby.connect()
-        logger.info("Connected to Furby")
-    except Exception as e:
-        logger.error(f"Failed to connect to Furby: {e}")
-        logger.info("Server will start but Furby is not connected")
+    furby = None
+    logger.info("Server ready. Connect to Furby via the web interface.")
 
     yield
 
     # Shutdown: Disconnect from Furby
     logger.info("PyFluff server shutting down...")
     if furby and furby.connected:
-        await furby.disconnect()
+        try:
+            await furby.disconnect()
+        except Exception as e:
+            logger.error(f"Error disconnecting: {e}")
 
 
 # Create FastAPI app
@@ -67,6 +65,20 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Mount static files
+web_dir = Path(__file__).parent.parent / "web"
+if web_dir.exists():
+    app.mount("/static", StaticFiles(directory=str(web_dir)), name="static")
 
 
 # Helper function to check connection
@@ -152,30 +164,48 @@ async def disconnect() -> CommandResponse:
 @app.post("/antenna", response_model=CommandResponse)
 async def set_antenna(color: AntennaColor) -> CommandResponse:
     """Set antenna LED color."""
+    logger.info(f"Setting antenna color: RGB({color.red}, {color.green}, {color.blue})")
     fb = get_furby()
-    await fb.set_antenna_color(color.red, color.green, color.blue)
-    return CommandResponse(
-        success=True,
-        message=f"Antenna color set to RGB({color.red}, {color.green}, {color.blue})",
-    )
+    try:
+        await fb.set_antenna_color(color.red, color.green, color.blue)
+        logger.info("Antenna color set successfully")
+        return CommandResponse(
+            success=True,
+            message=f"Antenna color set to RGB({color.red}, {color.green}, {color.blue})",
+        )
+    except Exception as e:
+        logger.error(f"Failed to set antenna color: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/action", response_model=CommandResponse)
 async def trigger_action(action: ActionSequence) -> CommandResponse:
     """Trigger a Furby action sequence."""
+    logger.info(f"Triggering action: {action.input}/{action.index}/{action.subindex}/{action.specific}")
     fb = get_furby()
-    await fb.trigger_action(action.input, action.index, action.subindex, action.specific)
-    return CommandResponse(success=True, message="Action triggered")
+    try:
+        await fb.trigger_action(action.input, action.index, action.subindex, action.specific)
+        logger.info("Action triggered successfully")
+        return CommandResponse(success=True, message="Action triggered")
+    except Exception as e:
+        logger.error(f"Failed to trigger action: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/lcd/{state}", response_model=CommandResponse)
 async def set_lcd(state: bool) -> CommandResponse:
     """Control LCD backlight."""
+    logger.info(f"Setting LCD backlight: {'on' if state else 'off'}")
     fb = get_furby()
-    await fb.set_lcd_backlight(state)
-    return CommandResponse(
-        success=True, message=f"LCD backlight {'on' if state else 'off'}"
-    )
+    try:
+        await fb.set_lcd_backlight(state)
+        logger.info("LCD state changed successfully")
+        return CommandResponse(
+            success=True, message=f"LCD backlight {'on' if state else 'off'}"
+        )
+    except Exception as e:
+        logger.error(f"Failed to set LCD: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/debug", response_model=CommandResponse)
