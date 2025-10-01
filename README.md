@@ -1,0 +1,216 @@
+# PyFluff - Modern Python Controller for Furby Connect
+
+> A modern, Python 3.11+ implementation of Furby Connect Bluetooth LE control, designed for Raspberry Pi OS (Bookworm) and other Linux systems.
+
+<p align="center">
+	<img src="https://raw.githubusercontent.com/Jeija/bluefluff/master/img/debugeyes.jpg" alt="Furby Connect's Eyes" width="50%">
+</p>
+
+## About
+
+PyFluff is a complete rewrite of the original [bluefluff](https://github.com/Jeija/bluefluff) project in modern Python. It provides full control over Furby Connect toys via Bluetooth Low Energy (BLE), allowing you to:
+
+* Control Furby's actions, antenna color, and LCD backlight
+* Adjust Furby's emotions (hungriness, tiredness, wellness, etc.)
+* Monitor sensor states (antenna joystick, tickle/pet sensors, accelerometer)
+* Update Furby with official or custom DLC files
+* Access debug menus on Furby's LCD eyes
+* Build custom applications and automations
+
+## Features
+
+* **Modern Python 3.11+**: Uses type hints, async/await, and modern Python patterns
+* **Bleak BLE Stack**: Well-maintained, cross-platform BLE library
+* **FastAPI Web Server**: Modern async web framework with automatic OpenAPI documentation
+* **WebSocket Support**: Real-time sensor data streaming
+* **Async/Await**: Non-blocking operations throughout
+* **Structured Logging**: JSON-formatted logs for easy parsing
+* **Type Safety**: Full type hints for better IDE support and fewer bugs
+
+## Requirements
+
+* Python 3.11 or later
+* Raspberry Pi OS (Bookworm) or other Linux distribution
+* Bluetooth 4.0+ adapter (built-in on Raspberry Pi 3/4/5)
+
+## Installation
+
+### On Raspberry Pi OS (Bookworm)
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/PyFluff.git
+cd PyFluff
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### System Setup
+
+Ensure Bluetooth is enabled:
+
+```bash
+sudo systemctl enable bluetooth
+sudo systemctl start bluetooth
+```
+
+## Usage
+
+### Starting the Server
+
+```bash
+# Activate virtual environment
+source venv/bin/activate
+
+# Start PyFluff server
+python -m pyfluff.server
+```
+
+The server will:
+1. Scan for Furby Connect devices
+2. Automatically connect when found
+3. Start HTTP/WebSocket server on port 8080
+
+### Web Interface
+
+Open your browser to `http://localhost:8080` (or your Raspberry Pi's IP address) to access the interactive control panel.
+
+### API Documentation
+
+Interactive API documentation is available at:
+* Swagger UI: `http://localhost:8080/docs`
+* ReDoc: `http://localhost:8080/redoc`
+
+### Command Line Interface
+
+```bash
+# Scan for Furby devices
+python -m pyfluff.cli scan
+
+# Send a command
+python -m pyfluff.cli command --action antenna --red 255 --green 0 --blue 0
+
+# Monitor sensors
+python -m pyfluff.cli monitor
+```
+
+### Python API
+
+```python
+import asyncio
+from pyfluff.furby import FurbyConnect
+
+async def main():
+    furby = FurbyConnect()
+    await furby.connect()
+    
+    # Set antenna color to red
+    await furby.set_antenna_color(255, 0, 0)
+    
+    # Trigger an action
+    await furby.trigger_action(input=55, index=2, subindex=14, specific=0)
+    
+    # Monitor sensors
+    async for sensor_data in furby.sensor_stream():
+        print(sensor_data)
+    
+    await furby.disconnect()
+
+asyncio.run(main())
+```
+
+## Project Structure
+
+```
+PyFluff/
+├── pyfluff/
+│   ├── __init__.py
+│   ├── furby.py          # Core Furby BLE communication
+│   ├── protocol.py       # BLE protocol definitions
+│   ├── commands.py       # Command handlers
+│   ├── dlc.py           # DLC file handling
+│   ├── server.py        # FastAPI web server
+│   ├── cli.py           # Command-line interface
+│   └── models.py        # Data models
+├── web/
+│   ├── index.html       # Web control interface
+│   ├── style.css
+│   └── app.js
+├── tests/
+│   ├── test_furby.py
+│   ├── test_protocol.py
+│   └── test_commands.py
+├── examples/
+│   ├── basic_control.py
+│   ├── mood_monitor.py
+│   └── custom_dlc.py
+├── requirements.txt
+├── pyproject.toml
+├── README.md
+└── LICENSE
+
+```
+
+## Key Improvements Over Original
+
+1. **Modern BLE Stack**: Uses [Bleak](https://github.com/hbldh/bleak) instead of deprecated Noble
+2. **Async/Await**: Non-blocking I/O throughout
+3. **Type Safety**: Full type hints with Pydantic models
+4. **Better API**: RESTful HTTP API with WebSocket support
+5. **Auto Documentation**: OpenAPI/Swagger docs generated automatically
+6. **Cross-Platform**: Works on Linux, macOS, and Windows (with proper BLE support)
+7. **Testing**: Comprehensive test suite with pytest
+8. **Logging**: Structured JSON logging for production use
+
+## Development
+
+```bash
+# Install development dependencies
+pip install -r requirements-dev.txt
+
+# Run tests
+pytest
+
+# Run with auto-reload
+uvicorn pyfluff.server:app --reload
+
+# Type checking
+mypy pyfluff/
+
+# Linting
+ruff check pyfluff/
+```
+
+## Documentation
+
+Comprehensive protocol documentation is available in the [`docs/`](docs/) directory:
+
+* **[Protocol Documentation](docs/)** - Complete BLE protocol reference
+  * [Bluetooth GATT Structure](docs/bluetooth.md) - Service and characteristic UUIDs
+  * [GeneralPlus Commands](docs/generalplus.md) - Main processor command reference
+  * [Nordic Commands](docs/nordic.md) - Nordic SoC commands for DLC transfer
+* **[Action Reference](docs/actions.md)** - Understanding Furby's action system
+  * [Complete Action List](docs/actionlist.md) - All ~1000 actions with transcriptions
+  * [Furby Names](docs/names.md) - All 129 possible Furby names
+* **[DLC Files](docs/dlcformat.md)** - Custom content creation
+  * [Flashing DLC Files](docs/flashdlc.md) - How to upload custom content
+  * [App Update Mechanism](docs/connectworld.md) - How the official app works
+
+All documentation is derived from the original bluefluff project's research.
+
+## Acknowledgments
+
+This project is based on the excellent reverse engineering work by [Jeija](https://github.com/Jeija) in the original [bluefluff](https://github.com/Jeija/bluefluff) project. All protocol documentation and understanding of Furby Connect's internals comes from that research.
+
+## Disclaimer
+
+**This information is for educational purposes only.** By using this software, you agree to solely take risks for damaging your hardware. You may brick your Furby when interfacing with it in unwarranted ways and you will almost certainly void your warranty.
+
+## License
+
+MIT License - see LICENSE file for details

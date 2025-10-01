@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyFluff - Furby Connect Control</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐾 PyFluff</h1>
+            <p>Furby Connect Controller</p>
+            <div id="status" class="status disconnected">Disconnected</div>
+        </header>
+
+        <main>
+            <!-- Connection -->
+            <section class="card">
+                <h2>Connection</h2>
+                <div class="button-group">
+                    <button id="btn-connect" class="btn btn-primary">Connect</button>
+                    <button id="btn-disconnect" class="btn btn-secondary">Disconnect</button>
+                </div>
+                <div id="device-info"></div>
+            </section>
+
+            <!-- Antenna Color -->
+            <section class="card">
+                <h2>Antenna Color</h2>
+                <div class="color-controls">
+                    <div class="slider-group">
+                        <label for="red-slider">Red: <span id="red-value">255</span></label>
+                        <input type="range" id="red-slider" min="0" max="255" value="255">
+                    </div>
+                    <div class="slider-group">
+                        <label for="green-slider">Green: <span id="green-value">0</span></label>
+                        <input type="range" id="green-slider" min="0" max="255" value="0">
+                    </div>
+                    <div class="slider-group">
+                        <label for="blue-slider">Blue: <span id="blue-value">0</span></label>
+                        <input type="range" id="blue-slider" min="0" max="255" value="0">
+                    </div>
+                </div>
+                <div id="color-preview" style="background: rgb(255, 0, 0);"></div>
+                <button id="btn-set-antenna" class="btn btn-primary">Set Antenna Color</button>
+                
+                <div class="preset-colors">
+                    <button class="color-preset" data-color="255,0,0" style="background: red;">Red</button>
+                    <button class="color-preset" data-color="0,255,0" style="background: green;">Green</button>
+                    <button class="color-preset" data-color="0,0,255" style="background: blue;">Blue</button>
+                    <button class="color-preset" data-color="255,255,0" style="background: yellow;">Yellow</button>
+                    <button class="color-preset" data-color="255,0,255" style="background: magenta;">Magenta</button>
+                    <button class="color-preset" data-color="0,255,255" style="background: cyan;">Cyan</button>
+                    <button class="color-preset" data-color="255,255,255" style="background: white;">White</button>
+                    <button class="color-preset" data-color="0,0,0" style="background: black; color: white;">Off</button>
+                </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="card">
+                <h2>Quick Actions</h2>
+                <div class="button-grid">
+                    <button class="btn btn-action" data-action="55,2,14,0">Giggle</button>
+                    <button class="btn btn-action" data-action="56,3,15,1">Puke</button>
+                    <button id="btn-lcd-on" class="btn btn-action">LCD On</button>
+                    <button id="btn-lcd-off" class="btn btn-action">LCD Off</button>
+                    <button id="btn-debug" class="btn btn-action">Debug Menu</button>
+                </div>
+            </section>
+
+            <!-- Custom Action -->
+            <section class="card">
+                <h2>Custom Action</h2>
+                <div class="input-group">
+                    <label>Input: <input type="number" id="action-input" min="0" max="255" value="55"></label>
+                    <label>Index: <input type="number" id="action-index" min="0" max="255" value="2"></label>
+                    <label>Subindex: <input type="number" id="action-subindex" min="0" max="255" value="14"></label>
+                    <label>Specific: <input type="number" id="action-specific" min="0" max="255" value="0"></label>
+                </div>
+                <button id="btn-custom-action" class="btn btn-primary">Trigger Action</button>
+            </section>
+
+            <!-- Mood Control -->
+            <section class="card">
+                <h2>Mood Control</h2>
+                <div class="input-group">
+                    <label>Type:
+                        <select id="mood-type">
+                            <option value="excitedness">Excitedness</option>
+                            <option value="displeasedness">Displeasedness</option>
+                            <option value="tiredness">Tiredness</option>
+                            <option value="fullness">Fullness</option>
+                            <option value="wellness">Wellness</option>
+                        </select>
+                    </label>
+                    <label>Action:
+                        <select id="mood-action">
+                            <option value="set">Set</option>
+                            <option value="increase">Increase</option>
+                        </select>
+                    </label>
+                    <label>Value: <input type="number" id="mood-value" min="0" max="100" value="50"></label>
+                </div>
+                <button id="btn-set-mood" class="btn btn-primary">Update Mood</button>
+            </section>
+
+            <!-- DLC Management -->
+            <section class="card">
+                <h2>DLC Management</h2>
+                <div class="input-group">
+                    <label>Upload DLC:
+                        <input type="file" id="dlc-file" accept=".dlc,.DLC">
+                    </label>
+                    <label>Slot: <input type="number" id="dlc-slot" min="0" max="255" value="2"></label>
+                </div>
+                <button id="btn-upload-dlc" class="btn btn-primary">Upload DLC</button>
+                
+                <div class="button-group" style="margin-top: 1rem;">
+                    <button id="btn-load-dlc" class="btn btn-secondary">Load DLC</button>
+                    <button id="btn-activate-dlc" class="btn btn-secondary">Activate DLC</button>
+                </div>
+            </section>
+
+            <!-- Sensor Monitor -->
+            <section class="card">
+                <h2>Sensor Monitor</h2>
+                <button id="btn-monitor" class="btn btn-primary">Start Monitoring</button>
+                <div id="sensor-data" class="sensor-data"></div>
+            </section>
+
+            <!-- Log -->
+            <section class="card">
+                <h2>Log</h2>
+                <div id="log" class="log"></div>
+            </section>
+        </main>
+
+        <footer>
+            <p>PyFluff v1.0.0 | <a href="/docs" target="_blank">API Docs</a></p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+MIT License
+
+Copyright (c) Martin Woodward
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+This project is based on the original bluefluff project by Jeija (https://github.com/Jeija/bluefluff)
+which is also licensed under the MIT License. Please see the original project for more
+information.
+
+DISCLAIMER: This software is for educational purposes only. By using this
+software, you agree to solely take responsibility for any risks of damaging
+your hardware. You may brick your Furby when interfacing with it in unwarranted
+ways and you will almost certainly void your warranty when applying this
+knowledge.
+
+Furby is a trademark of Hasbro. This project is not affiliated with Hasbro in
+ANY WAY. It is purely for educational purposes and to allow technically minded owners of Furby Connect 
+edition toys to be able to control their devices over Bluetooth now that the manufacturer
+has removed support for the associated Bluetooth control application. The Furby Connect
+edition toy and associated sofwtare are no longer supported by Hasbro so please don't contact them for support
+with this project.  All rights reserved to their respective owners.
+
+All reverse engineering of the Furby Connect edition Bluetooth protocol was done by the Bluefluff
+community. Please see the original Bluefluff project for more information https://github.com/Jeija/bluefluff.
+This project stands entirely on the shoulders of those diminutive giants.
