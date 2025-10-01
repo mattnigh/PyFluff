@@ -96,5 +96,5 @@ pyfluff dlc deactivate --slot 0
 pyfluff dlc delete --slot 0
 ```
 
-> [!NOTE] Attribution
+> [!NOTE]
 > This documentation is derived from the [bluefluff project](https://github.com/Jeija/bluefluff) by Jeija. The original research and reverse engineering work was done by the bluefluff community. PyFluff is a modern Python implementation of the same protocols.

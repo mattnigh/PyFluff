@@ -57,6 +57,6 @@ After the initialization of the transfer, the App just sends the raw contents of
 * The RSSIListen, given its name, seems to have something to do with signal strength indication, but I haven't been able to make use of that yet, just subscribing doesn't automatically report any data. But I also haven't really tried, so it might actually do something.
 * I don't know what the two mysterious characteristics (one of them for reading, the other one for writing) are used for, but I haven't seriously investigated that. My assumption would be that they are for Furby-to-Furby ("F2F") communication, so that two Furbies next to each other can exchange information such as their name and synchronize their actions like singing together.
 
-> [!NOTE] Attribution
+> [!NOTE]
 > This documentation is derived from the [bluefluff project](https://github.com/Jeija/bluefluff) by Jeija. The original research and reverse engineering work was done by the bluefluff community. PyFluff is a modern Python implementation of the same protocols.
 

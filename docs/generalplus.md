@@ -113,5 +113,5 @@ GeneralPlus commands and responses are the values written to / read from the Gen
 * `20:1a` … TimedGroupSet (Answered to `e2:something`)
 * `20:1b` … CustomNotificationSet (Answered to `31:something`)
 
-> [!NOTE] Attribution
+> [!NOTE]
 > This documentation is derived from the [bluefluff project](https://github.com/Jeija/bluefluff) by Jeija. The original research and reverse engineering work was done by the bluefluff community. PyFluff is a modern Python implementation of the same protocols.

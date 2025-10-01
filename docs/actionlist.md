@@ -2,7 +2,7 @@
 
 As there are so many actions, below is a table of contents based on action type.
 
-> [!NOTE] Attribution
+> [!NOTE]
 > This documentation is derived from the [bluefluff project](https://github.com/Jeija/bluefluff) by Jeija. The original research and reverse engineering work was done by the bluefluff community. PyFluff is a modern Python implementation of the same protocols.
 
 - [Furby Connect Action List](#furby-connect-action-list)
@@ -1908,5 +1908,5 @@ May vary based on DLC installed
 These might vary based on DLC installed
 
 
-> [!NOTE] Attribution
+> [!NOTE]
 > This documentation is derived from the [bluefluff project](https://github.com/Jeija/bluefluff) by Jeija. The original research and reverse engineering work was done by the bluefluff community. PyFluff is a modern Python implementation of the same protocols.

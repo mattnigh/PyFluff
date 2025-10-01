@@ -25,5 +25,5 @@ Responses are notifications send by the NordicListen characteristic to the App.
 * `0x0e`: I have no idea, always contains `0x0c:0x00` for me
 
 
-> [!NOTE] Attribution
+> [!NOTE]
 > This documentation is derived from the [bluefluff project](https://github.com/Jeija/bluefluff) by Jeija. The original research and reverse engineering work was done by the bluefluff community. PyFluff is a modern Python implementation of the same protocols.

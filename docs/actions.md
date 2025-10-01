@@ -17,6 +17,6 @@ However, this hierarchy can also be used in different ways. When playing songs i
 ## List
 As there are so many actions, they are now contained on a seperate [Action List Page](actionlist.md), broken down by category.
 
-> [!NOTE] Attribution
+> [!NOTE]
 > This documentation is derived from the [bluefluff project](https://github.com/Jeija/bluefluff) by Jeija. The original research and reverse engineering work was done by the bluefluff community. PyFluff is a modern Python implementation of the same protocols.
 

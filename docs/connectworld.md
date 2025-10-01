@@ -65,5 +65,5 @@ for the English version. The `masterlist.xml` document also specifies DLC files 
 These DLC files are what we are really after, since we can flash our own content to Furby by modifying the original DLC files or creating our own. Analysis of Furby's Bluetooth communication shows that these DLC files get flashed to the toy in their raw format, so we only need to figure out a way to decode these files and eventually inject our own content, see [the documentation page about DLC files](dlcformat.md).
 
 
-> [!NOTE] Attribution
+> [!NOTE]
 > This documentation is derived from the [bluefluff project](https://github.com/Jeija/bluefluff) by Jeija. The original research and reverse engineering work was done by the bluefluff community. PyFluff is a modern Python implementation of the same protocols.

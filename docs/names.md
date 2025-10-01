@@ -138,5 +138,5 @@ Therefore, we only get a total of 13 * 10 - 1 = 129 different names.
 * `128`: Way-Toh
 
 
-> [!NOTE] Attribution
+> [!NOTE]
 > This documentation is derived from the [bluefluff project](https://github.com/Jeija/bluefluff) by Jeija. The original research and reverse engineering work was done by the bluefluff community. PyFluff is a modern Python implementation of the same protocols.

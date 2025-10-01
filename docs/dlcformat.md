@@ -21,5 +21,5 @@ Custom content can be inserted using the original bluefluff `util/inject_binary.
 Furby doesn't do any checksum tests on the DLC files, but it can probably calculate checksums. The checking is normally done by the Furby Connect World App, so we can just ignore checksums here for now.
 
 
-> [!NOTE] Attribution
+> [!NOTE]
 > This documentation is derived from the [bluefluff project](https://github.com/Jeija/bluefluff) by Jeija. The original research and reverse engineering work was done by the bluefluff community. PyFluff is a modern Python implementation of the same protocols.
