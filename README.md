@@ -119,11 +119,32 @@ Interactive API documentation is available at:
 # Scan for Furby devices
 python -m pyfluff.cli scan
 
-# Send a command
-python -m pyfluff.cli command --action antenna --red 255 --green 0 --blue 0
+# Set antenna color to red
+python -m pyfluff.cli antenna --red 255 --green 0 --blue 0
 
-# Monitor sensors
+# Trigger a specific action
+python -m pyfluff.cli action --input 1 --index 0 --subindex 0 --specific 0
+
+# Monitor sensors in real-time
 python -m pyfluff.cli monitor
+
+# Get device information
+python -m pyfluff.cli info
+
+# Control LCD backlight
+python -m pyfluff.cli lcd true
+
+# Cycle debug menu
+python -m pyfluff.cli debug
+
+# Upload DLC file
+python -m pyfluff.cli upload-dlc custom.dlc --slot 2
+
+# Load DLC from slot
+python -m pyfluff.cli load-dlc 2
+
+# Activate loaded DLC
+python -m pyfluff.cli activate-dlc
 ```
 
 ### Python API
@@ -183,16 +204,16 @@ PyFluff/
 
 ```
 
-## Key Improvements Over Original
+## Key Changes from Bluefluff
 
-1. **Modern BLE Stack**: Uses [Bleak](https://github.com/hbldh/bleak) instead of deprecated Noble
-2. **Async/Await**: Non-blocking I/O throughout
+1. **Python Based**: Built for Python 3 with async. 
+2. **Modern BLE Stack**: Uses [Bleak](https://github.com/hbldh/bleak)
 3. **Type Safety**: Full type hints with Pydantic models
-4. **Better API**: RESTful HTTP API with WebSocket support
-5. **Auto Documentation**: OpenAPI/Swagger docs generated automatically
+4. **Web RPC**: Kept a RESTful HTTP API with WebSocket support
+5. **Auto Documentation**: OpenAPI/Swagger docs
 6. **Cross-Platform**: Works on Linux, macOS, and Windows (with proper BLE support)
-7. **Testing**: Comprehensive test suite with pytest
-8. **Logging**: Structured JSON logging for production use
+7. **Testing**: pytest based test suite
+8. **Logging**: Structured JSON logging
 
 ## Development
 
@@ -257,25 +278,24 @@ pytest tests/test_protocol.py -v
 - BLE works natively through Core Bluetooth
 - Great for development and testing protocol logic
 - Can connect to real Furby devices for testing
-- VS Code with Python extension recommended
+- VS Code with Python extension and GitHub Copilot recommended
 
 #### Raspberry Pi Deployment
 - Production target platform
-- Test thoroughly on actual Pi hardware
-- Consider using systemd service for production deployment
-- Monitor resource usage (CPU/memory) during BLE operations
-
+- Test thoroughly on actual Pi hardware. Mostly tested on Pi 4B and 5B.
+- Consider using systemd service for headless deployment
+  
 ## Documentation
 
-Comprehensive protocol documentation is available in the [`docs/`](docs/) directory:
+Thanks to the Bluefluff community, comprehensive protocol documentation is available in the [`docs/`](docs/) directory:
 
+* **[Action Reference](docs/actions.md)** - Understanding Furby's action system
+  * [Complete Action List](docs/actionlist.md) - All ~1000 actions with transcriptions
+  * [Furby Names](docs/names.md) - All 129 possible Furby names
 * **[Protocol Documentation](docs/)** - Complete BLE protocol reference
   * [Bluetooth GATT Structure](docs/bluetooth.md) - Service and characteristic UUIDs
   * [GeneralPlus Commands](docs/generalplus.md) - Main processor command reference
   * [Nordic Commands](docs/nordic.md) - Nordic SoC commands for DLC transfer
-* **[Action Reference](docs/actions.md)** - Understanding Furby's action system
-  * [Complete Action List](docs/actionlist.md) - All ~1000 actions with transcriptions
-  * [Furby Names](docs/names.md) - All 129 possible Furby names
 * **[DLC Files](docs/dlcformat.md)** - Custom content creation
   * [Flashing DLC Files](docs/flashdlc.md) - How to upload custom content
   * [App Update Mechanism](docs/connectworld.md) - How the official app works
@@ -288,8 +308,17 @@ This project is based on the excellent reverse engineering work by [Jeija](https
 
 ## Disclaimer
 
-**This information is for educational purposes only.** By using this software, you agree to solely take risks for damaging your hardware. You may brick your Furby when interfacing with it in unwarranted ways and you will almost certainly void your warranty.
+**This information is for educational purposes only.** By using this software, you agree to solely take risks for damaging your hardware. You may brick your Furby when interfacing with it in unwarranted ways and you will almost certainly void any warranty you might have.
+
+Furby is a trademark of Hasbro. This project is not affiliated with Hasbro in
+ANY WAY. It is purely for educational purposes and to allow technically minded owners of Furby Connect edition toys to be able to control their devices over Bluetooth now that the manufacturer has removed support for the associated Bluetooth control application. The Furby Connect edition toy and associated sofwtare are no longer supported by Hasbro so please don't contact them for support with this project.  All rights reserved to their respective owners.
+
+The project ONLY works with a Furby connection edition toy, and not the current retail Furby's available today.  You'll need to own one of the older toys to be able to experiment (it's the one with LCD eyes) and sleeping mask.
+
+All reverse engineering of the Furby Connect edition Bluetooth protocol was done by the Bluefluff community. Please see the original Bluefluff project for more information https://github.com/Jeija/bluefluff on their amazing work.
+
+This project stands entirely on the shoulders of those diminutive giants.
 
 ## License
 
-MIT License - see LICENSE file for details
+MIT License - see the [LICENSE](LICENSE) file for details

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pyfluff"
 version = "1.0.0"
-description = "Modern Python controller for Furby Connect via Bluetooth LE"
+description = "Python controller for Furby Connect via Bluetooth LE"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
