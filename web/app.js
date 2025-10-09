@@ -97,6 +97,36 @@ const greenSlider = document.getElementById('green-slider');
 const blueSlider = document.getElementById('blue-slider');
 const colorPreview = document.getElementById('color-preview');
 
+// Color memory slots (stores last 5 custom colors)
+// Generate random colorful colors for initial state
+function randomColorfulColor() {
+    // Generate vibrant colors by ensuring at least one channel is high and variety
+    const colors = [
+        { r: 255, g: Math.floor(Math.random() * 128), b: Math.floor(Math.random() * 128) }, // Red-ish
+        { r: Math.floor(Math.random() * 128), g: 255, b: Math.floor(Math.random() * 128) }, // Green-ish
+        { r: Math.floor(Math.random() * 128), g: Math.floor(Math.random() * 128), b: 255 }, // Blue-ish
+        { r: 255, g: 255, b: Math.floor(Math.random() * 128) }, // Yellow-ish
+        { r: 255, g: Math.floor(Math.random() * 128), b: 255 }, // Magenta-ish
+        { r: Math.floor(Math.random() * 128), g: 255, b: 255 }, // Cyan-ish
+        { r: 255, g: Math.floor(Math.random() * 100) + 155, b: Math.floor(Math.random() * 100) + 155 }, // Bright mix
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+}
+
+const colorMemory = [
+    randomColorfulColor(),
+    randomColorfulColor(),
+    randomColorfulColor(),
+    randomColorfulColor(),
+    randomColorfulColor()
+];
+
+// Default preset colors to exclude from memory
+const defaultPresets = [
+    '255,0,0', '0,255,0', '0,0,255', '255,255,0',
+    '255,0,255', '0,255,255', '255,255,255', '0,0,0'
+];
+
 function updateColorPreview() {
     const r = redSlider.value;
     const g = greenSlider.value;
@@ -109,24 +139,73 @@ function updateColorPreview() {
     colorPreview.style.background = `rgb(${r}, ${g}, ${b})`;
 }
 
+function updateColorMemoryDisplay() {
+    document.querySelectorAll('.color-memory').forEach((btn, index) => {
+        const color = colorMemory[index];
+        btn.style.background = `rgb(${color.r}, ${color.g}, ${color.b})`;
+        btn.dataset.color = `${color.r},${color.g},${color.b}`;
+    });
+}
+
+function addToColorMemory(r, g, b) {
+    const colorStr = `${r},${g},${b}`;
+    
+    // Don't add default presets to memory
+    if (defaultPresets.includes(colorStr)) {
+        return;
+    }
+    
+    // Check if color already exists in memory
+    const existingIndex = colorMemory.findIndex(c => c.r == r && c.g == g && c.b == b);
+    if (existingIndex !== -1) {
+        return; // Already in memory
+    }
+    
+    // Add to front and shift others back
+    colorMemory.unshift({ r: parseInt(r), g: parseInt(g), b: parseInt(b) });
+    colorMemory.pop();
+    
+    updateColorMemoryDisplay();
+}
+
+async function setAntennaColor(r, g, b, skipMemory = false) {
+    try {
+        await apiCall('/antenna', 'POST', {
+            red: parseInt(r),
+            green: parseInt(g),
+            blue: parseInt(b)
+        });
+        log(`Antenna color set to RGB(${r}, ${g}, ${b})`, 'success');
+        
+        if (!skipMemory) {
+            addToColorMemory(r, g, b);
+        }
+    } catch (error) {
+        log(`Failed to set antenna: ${error.message}`, 'error');
+    }
+}
+
 redSlider.addEventListener('input', updateColorPreview);
 greenSlider.addEventListener('input', updateColorPreview);
 blueSlider.addEventListener('input', updateColorPreview);
 
-document.getElementById('btn-set-antenna').addEventListener('click', async () => {
-    try {
-        const result = await apiCall('/antenna', 'POST', {
-            red: parseInt(redSlider.value),
-            green: parseInt(greenSlider.value),
-            blue: parseInt(blueSlider.value)
-        });
-        log(result.message, 'success');
-    } catch (error) {
-        log(`Failed to set antenna: ${error.message}`, 'error');
-    }
+// Auto-send on slider release
+redSlider.addEventListener('change', () => {
+    setAntennaColor(redSlider.value, greenSlider.value, blueSlider.value);
+});
+greenSlider.addEventListener('change', () => {
+    setAntennaColor(redSlider.value, greenSlider.value, blueSlider.value);
+});
+blueSlider.addEventListener('change', () => {
+    setAntennaColor(redSlider.value, greenSlider.value, blueSlider.value);
 });
 
-// Color presets
+// Click current color preview to resend
+colorPreview.addEventListener('click', () => {
+    setAntennaColor(redSlider.value, greenSlider.value, blueSlider.value, true);
+});
+
+// Color presets (including memory slots)
 document.querySelectorAll('.color-preset').forEach(btn => {
     btn.addEventListener('click', () => {
         const [r, g, b] = btn.dataset.color.split(',').map(Number);
@@ -134,6 +213,10 @@ document.querySelectorAll('.color-preset').forEach(btn => {
         greenSlider.value = g;
         blueSlider.value = b;
         updateColorPreview();
+        
+        // Don't add presets to memory, but do add memory slot colors
+        const isMemorySlot = btn.classList.contains('color-memory');
+        setAntennaColor(r, g, b, !isMemorySlot);
     });
 });
 
@@ -144,6 +227,11 @@ document.querySelectorAll('.btn-action[data-action]').forEach(btn => {
         try {
             const result = await apiCall('/action', 'POST', { input, index, subindex, specific });
             log(`Action triggered: ${btn.textContent}`, 'success');
+            
+            // Add to recent actions if recentActions is available
+            if (typeof recentActions !== 'undefined') {
+                recentActions.add({ input, index, subindex, specific, category: 'Quick Actions', description: btn.textContent });
+            }
         } catch (error) {
             log(`Action failed: ${error.message}`, 'error');
         }
@@ -182,33 +270,80 @@ document.getElementById('btn-debug').addEventListener('click', async () => {
 // Custom action
 document.getElementById('btn-custom-action').addEventListener('click', async () => {
     try {
-        const result = await apiCall('/action', 'POST', {
-            input: parseInt(document.getElementById('action-input').value),
-            index: parseInt(document.getElementById('action-index').value),
-            subindex: parseInt(document.getElementById('action-subindex').value),
-            specific: parseInt(document.getElementById('action-specific').value)
-        });
+        const input = parseInt(document.getElementById('action-input').value);
+        const index = parseInt(document.getElementById('action-index').value);
+        const subindex = parseInt(document.getElementById('action-subindex').value);
+        const specific = parseInt(document.getElementById('action-specific').value);
+        
+        const result = await apiCall('/action', 'POST', { input, index, subindex, specific });
         log('Custom action triggered', 'success');
+        
+        // Add to recent actions if recentActions is available
+        if (typeof recentActions !== 'undefined' && typeof FURBY_ACTIONS !== 'undefined') {
+            // Look up the action in the database
+            const knownAction = FURBY_ACTIONS.find(a => 
+                a.input === input && 
+                a.index === index && 
+                a.subindex === subindex && 
+                a.specific === specific
+            );
+            
+            const description = knownAction ? knownAction.description : `Action [${input},${index},${subindex},${specific}]`;
+            const category = knownAction ? knownAction.category : 'Custom';
+            
+            recentActions.add({ input, index, subindex, specific, category, description });
+        }
     } catch (error) {
         log(`Custom action failed: ${error.message}`, 'error');
     }
 });
 
-// Mood control
-document.getElementById('btn-set-mood').addEventListener('click', async () => {
-    try {
-        const result = await apiCall('/mood', 'POST', {
-            type: document.getElementById('mood-type').value,
-            action: document.getElementById('mood-action').value,
-            value: parseInt(document.getElementById('mood-value').value)
-        });
-        log(result.message, 'success');
-    } catch (error) {
-        log(`Mood update failed: ${error.message}`, 'error');
-    }
+// Mood control with sliders
+const moodState = {
+    excitedness: 50,
+    displeasedness: 0,
+    tiredness: 0,
+    fullness: 50,
+    wellness: 50
+};
+
+// Update mood value display as slider moves
+document.querySelectorAll('.mood-slider').forEach(slider => {
+    slider.addEventListener('input', (e) => {
+        const moodType = e.target.dataset.mood;
+        const value = e.target.value;
+        document.getElementById(`${moodType}-value`).textContent = value;
+    });
+    
+    // Auto-update Furby when slider is released
+    slider.addEventListener('change', async (e) => {
+        const moodType = e.target.dataset.mood;
+        const value = parseInt(e.target.value);
+        const previousValue = moodState[moodType];
+        
+        // If slider was already at 0 or 100 and released there, resend the value
+        const shouldResend = (value === previousValue) && (value === 0 || value === 100);
+        
+        try {
+            const result = await apiCall('/mood', 'POST', {
+                type: moodType,
+                action: 'set',
+                value: value
+            });
+            moodState[moodType] = value;
+            log(`${moodType.charAt(0).toUpperCase() + moodType.slice(1)} ${shouldResend ? 'resent' : 'set to'} ${value}`, 'success');
+        } catch (error) {
+            log(`Failed to update ${moodType}: ${error.message}`, 'error');
+            // Revert slider to last known value
+            e.target.value = moodState[moodType];
+            document.getElementById(`${moodType}-value`).textContent = moodState[moodType];
+        }
+    });
 });
 
 // DLC management
+// Commented out - DLC management UI is hidden
+/*
 document.getElementById('btn-upload-dlc').addEventListener('click', async () => {
     const fileInput = document.getElementById('dlc-file');
     const slot = parseInt(document.getElementById('dlc-slot').value);
@@ -257,6 +392,7 @@ document.getElementById('btn-activate-dlc').addEventListener('click', async () =
         log(`DLC activation failed: ${error.message}`, 'error');
     }
 });
+*/
 
 // Sensor monitoring
 document.getElementById('btn-monitor').addEventListener('click', () => {
@@ -321,4 +457,5 @@ function stopMonitoring() {
 
 // Initialize
 updateStatus();
-setInterval(updateStatus, 5000); // Update status every 5 seconds
+setInterval(updateStatus, 10000); // Update status every 10 seconds
+updateColorMemoryDisplay(); // Display random initial colors in memory slots

@@ -15,7 +15,7 @@ Furby Connect uses the GeneralPlus A1800 codec with a bitrate of 16000kb/s. This
 The original bluefluff `util/visualize_audio.py` script creates a 40-pixel wide grayscale image, where each pixel represents the hexadecimal value of the corresponding byte in the DLC file. This may be useful for getting an overview over the audio content in the DLC update and for injecting own audio.
 
 ## Inserting custom content into DLC files
-Custom content can be inserted using the original bluefluff `util/inject_binary.py` script. Please read the script and modify `TARGET`, `OUTFILE` and `INJECTIONS` in order to customize it to the files you want to add. Original DLC files can be downloaded from Hasbro's Amazon AWS servers as described in [App Update Mechanism](connectworld.md).
+Custom content can be inserted using the original bluefluff `util/inject_binary.py` script. Please read the script and modify `TARGET`, `OUTFILE` and `INJECTIONS` in order to customize it to the files you want to add. Note that original DLC files from Hasbro's servers are no longer available as the Furby Connect World app has been deprecated.
 
 ## Checksums
 Furby doesn't do any checksum tests on the DLC files, but it can probably calculate checksums. The checking is normally done by the Furby Connect World App, so we can just ignore checksums here for now.

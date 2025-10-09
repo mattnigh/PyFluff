@@ -270,6 +270,9 @@ ruff format pyfluff/
 
 # Run specific test file
 pytest tests/test_protocol.py -v
+
+# Regenerate web action database from actionlist.md
+python scripts/generate_actions_js.py
 ```
 
 ### Platform Notes
@@ -298,7 +301,6 @@ Thanks to the Bluefluff community, comprehensive protocol documentation is avail
   * [Nordic Commands](docs/nordic.md) - Nordic SoC commands for DLC transfer
 * **[DLC Files](docs/dlcformat.md)** - Custom content creation
   * [Flashing DLC Files](docs/flashdlc.md) - How to upload custom content
-  * [App Update Mechanism](docs/connectworld.md) - How the official app works
 
 All documentation is derived from the original bluefluff project's research.
 

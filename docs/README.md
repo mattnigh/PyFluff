@@ -17,7 +17,6 @@ This directory contains comprehensive documentation about the Furby Connect Blue
 ### DLC Files and Updates
 - **[dlcformat.md](dlcformat.md)** - DLC file format and content structure
 - **[flashdlc.md](flashdlc.md)** - How to flash custom DLC files to Furby
-- **[connectworld.md](connectworld.md)** - Furby Connect World app update mechanism
 
 ## Credits
 

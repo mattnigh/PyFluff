@@ -31,32 +31,42 @@
             <!-- Antenna Color -->
             <section class="card">
                 <h2>Antenna Color</h2>
-                <div class="color-controls">
-                    <div class="slider-group">
-                        <label for="red-slider">Red: <span id="red-value">255</span></label>
-                        <input type="range" id="red-slider" min="0" max="255" value="255">
+                <div class="antenna-container">
+                    <div class="color-controls-wrapper">
+                        <div class="color-controls">
+                            <div class="slider-group">
+                                <label for="red-slider">Red:</label>
+                                <input type="range" id="red-slider" min="0" max="255" value="255">
+                                <span id="red-value">255</span>
+                            </div>
+                            <div class="slider-group">
+                                <label for="green-slider">Green:</label>
+                                <input type="range" id="green-slider" min="0" max="255" value="0">
+                                <span id="green-value">0</span>
+                            </div>
+                            <div class="slider-group">
+                                <label for="blue-slider">Blue:</label>
+                                <input type="range" id="blue-slider" min="0" max="255" value="0">
+                                <span id="blue-value">0</span>
+                            </div>
+                        </div>
+                        <div id="color-preview" style="background: rgb(255, 0, 0);" title="Click to resend current color"></div>
                     </div>
-                    <div class="slider-group">
-                        <label for="green-slider">Green: <span id="green-value">0</span></label>
-                        <input type="range" id="green-slider" min="0" max="255" value="0">
+                    <div class="preset-colors">
+                        <button class="color-preset" data-color="255,0,0" style="background: red;" title="Red"></button>
+                        <button class="color-preset" data-color="0,255,0" style="background: green;" title="Green"></button>
+                        <button class="color-preset" data-color="0,0,255" style="background: blue;" title="Blue"></button>
+                        <button class="color-preset" data-color="255,255,0" style="background: yellow;" title="Yellow"></button>
+                        <button class="color-preset" data-color="255,0,255" style="background: magenta;" title="Magenta"></button>
+                        <button class="color-preset" data-color="0,255,255" style="background: cyan;" title="Cyan"></button>
+                        <button class="color-preset" data-color="255,255,255" style="background: white; border: 2px solid #ddd;" title="White"></button>
+                        <button class="color-preset color-memory" data-slot="0" style="background: rgb(128,128,128);" title="Recent color 1"></button>
+                        <button class="color-preset color-memory" data-slot="1" style="background: rgb(128,128,128);" title="Recent color 2"></button>
+                        <button class="color-preset color-memory" data-slot="2" style="background: rgb(128,128,128);" title="Recent color 3"></button>
+                        <button class="color-preset color-memory" data-slot="3" style="background: rgb(128,128,128);" title="Recent color 4"></button>
+                        <button class="color-preset color-memory" data-slot="4" style="background: rgb(128,128,128);" title="Recent color 5"></button>
+                        <button class="color-preset" data-color="0,0,0" style="background: black;" title="Off"></button>
                     </div>
-                    <div class="slider-group">
-                        <label for="blue-slider">Blue: <span id="blue-value">0</span></label>
-                        <input type="range" id="blue-slider" min="0" max="255" value="0">
-                    </div>
-                </div>
-                <div id="color-preview" style="background: rgb(255, 0, 0);"></div>
-                <button id="btn-set-antenna" class="btn btn-primary">Set Antenna Color</button>
-                
-                <div class="preset-colors">
-                    <button class="color-preset" data-color="255,0,0" style="background: red;">Red</button>
-                    <button class="color-preset" data-color="0,255,0" style="background: green;">Green</button>
-                    <button class="color-preset" data-color="0,0,255" style="background: blue;">Blue</button>
-                    <button class="color-preset" data-color="255,255,0" style="background: yellow;">Yellow</button>
-                    <button class="color-preset" data-color="255,0,255" style="background: magenta;">Magenta</button>
-                    <button class="color-preset" data-color="0,255,255" style="background: cyan;">Cyan</button>
-                    <button class="color-preset" data-color="255,255,255" style="background: white;">White</button>
-                    <button class="color-preset" data-color="0,0,0" style="background: black; color: white;">Off</button>
                 </div>
             </section>
 
@@ -75,41 +85,59 @@
             <!-- Custom Action -->
             <section class="card">
                 <h2>Custom Action</h2>
+                <div class="action-helper">
+                    <label for="action-search">Search Actions:</label>
+                    <input type="text" id="action-search" placeholder="Type to search actions..." autocomplete="off">
+                    <div id="action-dropdown" class="action-dropdown hidden">
+                        <div id="action-list" class="action-list"></div>
+                        <div id="recent-actions" class="recent-actions"></div>
+                    </div>
+                </div>
                 <div class="input-group">
                     <label>Input: <input type="number" id="action-input" min="0" max="255" value="55"></label>
                     <label>Index: <input type="number" id="action-index" min="0" max="255" value="2"></label>
                     <label>Subindex: <input type="number" id="action-subindex" min="0" max="255" value="14"></label>
                     <label>Specific: <input type="number" id="action-specific" min="0" max="255" value="0"></label>
                 </div>
+                <div id="action-description" class="action-description"></div>
                 <button id="btn-custom-action" class="btn btn-primary">Trigger Action</button>
             </section>
 
             <!-- Mood Control -->
             <section class="card">
                 <h2>Mood Control</h2>
-                <div class="input-group">
-                    <label>Type:
-                        <select id="mood-type">
-                            <option value="excitedness">Excitedness</option>
-                            <option value="displeasedness">Displeasedness</option>
-                            <option value="tiredness">Tiredness</option>
-                            <option value="fullness">Fullness</option>
-                            <option value="wellness">Wellness</option>
-                        </select>
-                    </label>
-                    <label>Action:
-                        <select id="mood-action">
-                            <option value="set">Set</option>
-                            <option value="increase">Increase</option>
-                        </select>
-                    </label>
-                    <label>Value: <input type="number" id="mood-value" min="0" max="100" value="50"></label>
+                <div class="mood-controls">
+                    <div class="slider-group">
+                        <label for="mood-excitedness">Excitedness:</label>
+                        <input type="range" id="mood-excitedness" class="mood-slider" data-mood="excitedness" min="0" max="100" value="50">
+                        <span id="excitedness-value">50</span>
+                    </div>
+                    <div class="slider-group">
+                        <label for="mood-displeasedness">Displeasedness:</label>
+                        <input type="range" id="mood-displeasedness" class="mood-slider" data-mood="displeasedness" min="0" max="100" value="0">
+                        <span id="displeasedness-value">0</span>
+                    </div>
+                    <div class="slider-group">
+                        <label for="mood-tiredness">Tiredness:</label>
+                        <input type="range" id="mood-tiredness" class="mood-slider" data-mood="tiredness" min="0" max="100" value="0">
+                        <span id="tiredness-value">0</span>
+                    </div>
+                    <div class="slider-group">
+                        <label for="mood-fullness">Fullness:</label>
+                        <input type="range" id="mood-fullness" class="mood-slider" data-mood="fullness" min="0" max="100" value="50">
+                        <span id="fullness-value">50</span>
+                    </div>
+                    <div class="slider-group">
+                        <label for="mood-wellness">Wellness:</label>
+                        <input type="range" id="mood-wellness" class="mood-slider" data-mood="wellness" min="0" max="100" value="50">
+                        <span id="wellness-value">50</span>
+                    </div>
                 </div>
-                <button id="btn-set-mood" class="btn btn-primary">Update Mood</button>
+                <p class="mood-info">Drag sliders to adjust mood values (0-100). Changes apply automatically when released.</p>
             </section>
 
             <!-- DLC Management -->
-            <section class="card">
+            <!-- <section class="card">
                 <h2>DLC Management</h2>
                 <div class="input-group">
                     <label>Upload DLC:
@@ -123,7 +151,7 @@
                     <button id="btn-load-dlc" class="btn btn-secondary">Load DLC</button>
                     <button id="btn-activate-dlc" class="btn btn-secondary">Activate DLC</button>
                 </div>
-            </section>
+            </section> -->
 
             <!-- Sensor Monitor -->
             <section class="card">
@@ -144,6 +172,8 @@
         </footer>
     </div>
 
+    <script id="action-data" type="application/json">[]</script>
+    <script src="/static/actions.js"></script>
     <script src="/static/app.js"></script>
 </body>
 </html>

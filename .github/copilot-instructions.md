@@ -40,6 +40,15 @@ pyfluff/
 ├── server.py           # FastAPI web server with REST + WebSocket
 ├── cli.py              # Typer CLI commands
 └── __main__.py         # Server entry point
+
+web/
+├── index.html          # Main web interface
+├── style.css           # Light, colorful, modern theme with gradients
+├── app.js              # Frontend logic (mood sliders, antenna controls, API calls)
+└── actions.js          # Auto-generated action database (DO NOT EDIT MANUALLY)
+
+scripts/
+└── generate_actions_js.py  # Regenerates web/actions.js from docs/actionlist.md
 ```
 
 ### Key Classes
@@ -64,6 +73,45 @@ pyfluff/
 - FastAPI app with REST endpoints and WebSocket
 - Connection state management
 - Real-time sensor streaming via WebSocket
+
+### Web Interface
+
+#### Frontend Architecture (`web/`)
+- **Vanilla JavaScript** - No frameworks, modern async/await patterns
+- **Light Theme** - Colorful gradients with sparkle effects
+- **Real-time Updates** - Mood sliders auto-send on release, status polling every 10s
+- **Auto-generated Action Database** - 1400+ actions parsed from `docs/actionlist.md`
+
+#### Key Files
+
+**index.html**
+- Mood Control: 5 sliders (Excitedness, Displeasedness, Tiredness, Fullness, Wellness)
+- Antenna Color: RGB sliders with color preview, 8 presets + 5 memory slots
+- Custom Action: Searchable dropdown with 1400+ actions, recent actions tracking
+- Quick Actions: Giggle, Puke, LCD controls, Debug menu
+- Sensor Monitor: WebSocket-based real-time streaming
+
+**style.css**
+- CSS Grid layouts with `minmax()` for perfect alignment
+- Gradient backgrounds: `linear-gradient(135deg, #fef3c7, #fce7f3, #e0e7ff)`
+- Glass morphism effects with `backdrop-filter: blur(10px)`
+- Z-index hierarchy: cards(1-2), dropdowns(9999)
+- Compact spacing (reduced 25-40% from original)
+
+**app.js**
+- Mood sliders: Auto-update on `change` event, resend on 0/100 click-release
+- Antenna color: Auto-send on slider input, clickable preview to resend
+- Color memory: 5 recent colors with random bright initialization
+- Cookie storage for persistent preferences
+- API calls: `async apiCall(endpoint, method, body)` wrapper
+
+**actions.js (AUTO-GENERATED)**
+- **DO NOT EDIT MANUALLY** - Run `scripts/generate_actions_js.py` to regenerate
+- 1439 actions parsed from `docs/actionlist.md`
+- Categories: Generic reactions, World App, Octave Notes, etc. (NO numeric prefixes)
+- Search functionality: Filter by category, description, or coordinates
+- Recent actions: Cookie-based tracking (max 10, 365-day expiry)
+- Real-time description updates on input field changes
 
 ## Coding Standards
 
@@ -148,7 +196,123 @@ Commands are byte arrays where the first byte is the command ID:
 ### Action Hierarchy
 Actions are organized as: **input** → **index** → **subindex** → **specific**
 - Example: Input 1 (petting) → Index 0 → Subindex 0 → Specific 0-8 (variations)
-- See `docs/actionlist.md` for complete list (~1000 actions with transcriptions)
+- See `docs/actionlist.md` for complete list (1400+ actions with transcriptions)
+- Web interface uses auto-generated `web/actions.js` for searchable action database
+
+## Action Database Generation
+
+### Automated Parser (`scripts/generate_actions_js.py`)
+- **Purpose**: Parse `docs/actionlist.md` markdown tables into JavaScript array
+- **Output**: `web/actions.js` with 1439+ actions
+- **Run when**: After updating actionlist.md or when actions.js is corrupted
+
+### Parser Features
+- Extracts markdown tables: `| input | index | subindex | specific | description |`
+- Cleans category names: Removes numeric prefixes (`^\d+(-\d+)?\s*-\s*`)
+  - "71 - Octave Notes" → "Octave Notes"
+  - "1-6 - Generic reactions" → "Generic reactions"
+  - "69 - World App" → "World App"
+- Preserves all helper functions (RecentActions, cookie management, search logic)
+- Generates file header: "DO NOT EDIT MANUALLY - Run scripts/generate_actions_js.py"
+
+### Usage
+```bash
+python scripts/generate_actions_js.py
+```
+
+Output shows:
+- Total actions parsed (should be ~1439)
+- Breakdown by category (31 categories)
+- Categories without numeric prefixes
+
+## Web Interface Development
+
+### UI Design Philosophy
+- **Light & Colorful**: Pastel gradients (peach → pink → lavender)
+- **Compact & Modern**: 25-40% reduced spacing from original dark theme
+- **Sparkly Effects**: CSS animations with gradient shifts and glow
+- **Glass Morphism**: Backdrop blur with semi-transparent cards
+
+### Layout System
+**CSS Grid for Alignment**
+```css
+.slider-group {
+    display: grid;
+    grid-template-columns: minmax(140px, max-content) 1fr auto;
+    gap: 1rem;
+}
+```
+- First column: Labels with consistent width (140px for mood, 70px for antenna)
+- Second column: Flexible slider controls
+- Third column: Auto-sized value displays
+
+**Z-Index Management**
+```
+1-2:   .card elements (base layer)
+100:   .action-helper (above cards)
+9999:  .action-dropdown (topmost for visibility)
+```
+- Parent cards need `overflow: visible` for dropdowns to escape
+
+### Interactive Elements
+
+**Mood Sliders**
+- Auto-update on `change` event (when released)
+- Resend on 0/100 values when clicked and released (edge case handling)
+- Status polling: GET `/status` every 10 seconds to sync UI
+- Default values: Excitedness=50, Displeasedness=0, Tiredness=0, Fullness=50, Wellness=50
+
+**Antenna Color Controls**
+- Auto-send on `input` event (real-time updates while dragging)
+- Clickable color preview to resend current color
+- 8 preset colors + 5 memory slots + off/black
+- Memory slots initialized with random bright colors (at least one RGB channel = 255)
+- Recent colors stored in memory, not presets
+
+**Custom Action Search**
+- Dropdown with 1439+ actions from `actions.js`
+- Search filters: category name, description text, coordinates
+- Results limited to 50 for performance
+- Recent actions (max 10) shown first with cookie persistence (365 days)
+- Action description updates in real-time as input fields change
+- Display format: `<strong>Category:</strong> description<br><small>Action: [i,x,s,p]</small>`
+
+### Event Handling Patterns
+
+**Real-time Updates (input event)**
+```javascript
+slider.addEventListener('input', () => {
+    // Update preview/display immediately
+    updatePreview();
+});
+```
+
+**Final Value Updates (change event)**
+```javascript
+slider.addEventListener('change', () => {
+    // Send to API when user releases control
+    sendToFurby();
+});
+```
+
+**Initialization on Page Load**
+```javascript
+// Initialize when DOM is ready
+updateStatus();
+setInterval(updateStatus, 10000);
+updateColorMemoryDisplay(); // Apply random colors to memory buttons
+```
+
+### Cookie Management
+```javascript
+function setCookie(name, value, days = 365) {
+    const date = new Date();
+    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    document.cookie = name + "=" + JSON.stringify(value) + ";expires=" + date.toUTCString() + ";path=/";
+}
+```
+- Recent actions: `furby_recent_actions` (10 items max, 365-day expiry)
+- Could add color memory persistence in future
 
 ## FastAPI Endpoints
 
@@ -313,12 +477,43 @@ await dlc_manager.upload_dlc(
 - API routes in `server.py`
 - CLI commands in `cli.py`
 - Data models in `models.py`
+- Web frontend in `web/` directory (HTML/CSS/JS)
+- Utility scripts in `scripts/` directory
+
+### Web Development Guidelines
+
+**DO NOT manually edit `web/actions.js`**
+- This file is auto-generated from `docs/actionlist.md`
+- Run `python scripts/generate_actions_js.py` to regenerate
+- Parser removes numeric prefixes from categories (e.g., "69 - World App" → "World App")
+- Handles both single numbers and ranges (e.g., "1-6 - Generic reactions")
+
+**CSS Layout Principles**
+- Use CSS Grid with `minmax()` for aligned layouts
+- Mood labels: `minmax(140px, max-content)`
+- Antenna labels: `minmax(70px, max-content)`
+- Set `overflow: visible` on parent cards for dropdown menus
+- Z-index hierarchy: cards < helpers < dropdowns
+
+**JavaScript Patterns**
+- Use `addEventListener('input', ...)` for real-time updates
+- Use `addEventListener('change', ...)` for final values
+- Cookie storage for persistence: `setCookie(name, value, days)`
+- Update description displays with `innerHTML` for rich formatting
+- Show action coordinates with category: `<strong>Category:</strong> description<br><small>Action: [i,x,s,p]</small>`
+
+**Color Memory System**
+- Generate random bright colors: ensure at least one RGB channel = 255
+- Initialize on page load: call `updateColorMemoryDisplay()` after DOM ready
+- Store last 5 colors in memory slots
+- Update buttons with `style.background = rgb(r,g,b)`
 
 ### Naming Conventions
 - Classes: PascalCase (`FurbyConnect`, `DLCManager`)
 - Functions/methods: snake_case (`set_antenna_color`, `trigger_action`)
 - Constants: UPPER_SNAKE_CASE (`FURBY_SERVICE_UUID`)
 - Private methods: `_underscore_prefix`
+- CSS classes: kebab-case (`mood-controls`, `action-dropdown`)
 
 ### Import Order
 1. Standard library
@@ -381,5 +576,15 @@ def new_command(arg: str = typer.Argument(..., help="Description")):
     """Command description."""
     asyncio.run(async_function(arg))
 ```
+
+**Regenerate action database:**
+```bash
+python scripts/generate_actions_js.py
+```
+This parses `docs/actionlist.md` and generates `web/actions.js` with:
+- All 1439+ Furby actions
+- Cleaned category names (no numeric prefixes)
+- Search/filter functionality
+- Cookie-based recent actions
 
 This document ensures consistent, high-quality code contributions to PyFluff!
