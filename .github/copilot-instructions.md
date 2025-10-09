@@ -45,10 +45,8 @@ web/
 ├── index.html          # Main web interface
 ├── style.css           # Light, colorful, modern theme with gradients
 ├── app.js              # Frontend logic (mood sliders, antenna controls, API calls)
-└── actions.js          # Auto-generated action database (DO NOT EDIT MANUALLY)
-
-scripts/
-└── generate_actions_js.py  # Regenerates web/actions.js from docs/actionlist.md
+├── actions.js          # Action database with 1400+ Furby actions
+└── names.js            # Name database with 129 Furby names
 ```
 
 ### Key Classes
@@ -197,33 +195,7 @@ Commands are byte arrays where the first byte is the command ID:
 Actions are organized as: **input** → **index** → **subindex** → **specific**
 - Example: Input 1 (petting) → Index 0 → Subindex 0 → Specific 0-8 (variations)
 - See `docs/actionlist.md` for complete list (1400+ actions with transcriptions)
-- Web interface uses auto-generated `web/actions.js` for searchable action database
-
-## Action Database Generation
-
-### Automated Parser (`scripts/generate_actions_js.py`)
-- **Purpose**: Parse `docs/actionlist.md` markdown tables into JavaScript array
-- **Output**: `web/actions.js` with 1439+ actions
-- **Run when**: After updating actionlist.md or when actions.js is corrupted
-
-### Parser Features
-- Extracts markdown tables: `| input | index | subindex | specific | description |`
-- Cleans category names: Removes numeric prefixes (`^\d+(-\d+)?\s*-\s*`)
-  - "71 - Octave Notes" → "Octave Notes"
-  - "1-6 - Generic reactions" → "Generic reactions"
-  - "69 - World App" → "World App"
-- Preserves all helper functions (RecentActions, cookie management, search logic)
-- Generates file header: "DO NOT EDIT MANUALLY - Run scripts/generate_actions_js.py"
-
-### Usage
-```bash
-python scripts/generate_actions_js.py
-```
-
-Output shows:
-- Total actions parsed (should be ~1439)
-- Breakdown by category (31 categories)
-- Categories without numeric prefixes
+- Web interface uses `web/actions.js` for searchable action database with 1400+ actions
 
 ## Web Interface Development
 
@@ -482,11 +454,10 @@ await dlc_manager.upload_dlc(
 
 ### Web Development Guidelines
 
-**DO NOT manually edit `web/actions.js`**
-- This file is auto-generated from `docs/actionlist.md`
-- Run `python scripts/generate_actions_js.py` to regenerate
-- Parser removes numeric prefixes from categories (e.g., "69 - World App" → "World App")
-- Handles both single numbers and ranges (e.g., "1-6 - Generic reactions")
+**Action and Name Databases**
+- `web/actions.js` contains 1400+ Furby actions with categories and descriptions
+- `web/names.js` contains 129 Furby names with searchable dropdown functionality
+- Both files include helper functions for cookies, search, and dropdown management
 
 **CSS Layout Principles**
 - Use CSS Grid with `minmax()` for aligned layouts
@@ -576,15 +547,5 @@ def new_command(arg: str = typer.Argument(..., help="Description")):
     """Command description."""
     asyncio.run(async_function(arg))
 ```
-
-**Regenerate action database:**
-```bash
-python scripts/generate_actions_js.py
-```
-This parses `docs/actionlist.md` and generates `web/actions.js` with:
-- All 1439+ Furby actions
-- Cleaned category names (no numeric prefixes)
-- Search/filter functionality
-- Cookie-based recent actions
 
 This document ensures consistent, high-quality code contributions to PyFluff!

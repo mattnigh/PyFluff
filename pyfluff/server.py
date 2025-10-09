@@ -19,6 +19,7 @@ from pyfluff.furby import FurbyConnect
 from pyfluff.dlc import DLCManager
 from pyfluff.models import (
     ActionSequence,
+    ActionList,
     AntennaColor,
     CommandResponse,
     FurbyStatus,
@@ -189,6 +190,39 @@ async def trigger_action(action: ActionSequence) -> CommandResponse:
         return CommandResponse(success=True, message="Action triggered")
     except Exception as e:
         logger.error(f"Failed to trigger action: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/actions/sequence", response_model=CommandResponse)
+async def trigger_action_sequence(action_list: ActionList) -> CommandResponse:
+    """
+    Trigger a sequence of Furby actions with delays between them.
+    
+    This endpoint executes multiple actions one after another, waiting for the
+    specified delay between each action to allow Furby to complete animations/sounds.
+    """
+    fb = get_furby()
+    total_actions = len(action_list.actions)
+    logger.info(f"Starting action sequence with {total_actions} actions (delay: {action_list.delay}s)")
+    
+    try:
+        for i, action in enumerate(action_list.actions, 1):
+            logger.info(f"Triggering action {i}/{total_actions}: {action.input}/{action.index}/{action.subindex}/{action.specific}")
+            await fb.trigger_action(action.input, action.index, action.subindex, action.specific)
+            
+            # Wait before next action (except after the last one)
+            if i < total_actions:
+                logger.debug(f"Waiting {action_list.delay}s before next action")
+                await asyncio.sleep(action_list.delay)
+        
+        logger.info(f"Action sequence completed successfully ({total_actions} actions)")
+        return CommandResponse(
+            success=True, 
+            message=f"Sequence completed: {total_actions} actions",
+            data={"actions_executed": total_actions, "delay_used": action_list.delay}
+        )
+    except Exception as e:
+        logger.error(f"Failed to execute action sequence: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

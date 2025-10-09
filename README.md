@@ -113,6 +113,29 @@ Interactive API documentation is available at:
 * Swagger UI: `http://localhost:8080/docs`
 * ReDoc: `http://localhost:8080/redoc`
 
+#### Action Sequences
+
+You can send multiple actions to Furby that execute one after another:
+
+```bash
+# Using curl to send a sequence
+curl -X POST http://localhost:8080/actions/sequence \
+  -H "Content-Type: application/json" \
+  -d '{
+    "actions": [
+      {"input": 71, "index": 0, "subindex": 0, "specific": 0},
+      {"input": 71, "index": 0, "subindex": 0, "specific": 1},
+      {"input": 71, "index": 0, "subindex": 0, "specific": 2}
+    ],
+    "delay": 1.5
+  }'
+```
+
+Or use the Python example:
+```bash
+python examples/action_sequence.py
+```
+
 ### Command Line Interface
 
 ```bash
@@ -270,9 +293,6 @@ ruff format pyfluff/
 
 # Run specific test file
 pytest tests/test_protocol.py -v
-
-# Regenerate web action database from actionlist.md
-python scripts/generate_actions_js.py
 ```
 
 ### Platform Notes

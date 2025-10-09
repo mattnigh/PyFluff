@@ -136,6 +136,24 @@
                 <p class="mood-info">Drag sliders to adjust mood values (0-100). Changes apply automatically when released.</p>
             </section>
 
+            <!-- Name Selection -->
+            <section class="card">
+                <h2>Furby Name</h2>
+                <div class="name-helper">
+                    <label for="name-search">Search Names:</label>
+                    <input type="text" id="name-search" placeholder="Type to search names (e.g., Dee-Koh)..." autocomplete="off">
+                    <div id="name-dropdown" class="action-dropdown hidden">
+                        <div id="name-list" class="action-list"></div>
+                    </div>
+                </div>
+                <div class="name-selection">
+                    <label for="name-id">Selected Name ID:</label>
+                    <input type="number" id="name-id" min="0" max="128" value="47" readonly>
+                    <span id="selected-name-display" class="name-preview">Dee-Koh</span>
+                </div>
+                <button id="btn-set-name" class="btn btn-primary">Set Name</button>
+            </section>
+
             <!-- DLC Management -->
             <!-- <section class="card">
                 <h2>DLC Management</h2>
@@ -174,6 +192,7 @@
 
     <script id="action-data" type="application/json">[]</script>
     <script src="/static/actions.js"></script>
+    <script src="/static/names.js"></script>
     <script src="/static/app.js"></script>
 </body>
 </html>

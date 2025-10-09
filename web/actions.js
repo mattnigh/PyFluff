@@ -1,6 +1,5 @@
 // Furby Connect Action Database and Helper
-// This file is auto-generated from docs/actionlist.md
-// DO NOT EDIT MANUALLY - Run scripts/generate_actions_js.py to regenerate
+// 1439 Furby actions with categories and descriptions
 
 const FURBY_ACTIONS = [
     { input: 1, index: 0, subindex: 0, specific: 0, category: "Generic reactions", description: "ah-may moh-moh, kah kah more pet!" },
@@ -1635,7 +1634,7 @@ function initActionHelper() {
         );
         
         if (action) {
-            descriptionDiv.innerHTML = `<strong>${action.category}:</strong> ${action.description}<br><small>Action: [${input},${index},${subindex},${specific}]</small>`;
+            descriptionDiv.innerHTML = `<strong>${action.category}:</strong> ${action.description}`;
         } else {
             descriptionDiv.innerHTML = `<strong>Custom Action:</strong> [${input},${index},${subindex},${specific}]`;
         }

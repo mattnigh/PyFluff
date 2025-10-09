@@ -23,6 +23,13 @@ class ActionSequence(BaseModel):
     specific: int = Field(ge=0, le=255, description="Specific action ID")
 
 
+class ActionList(BaseModel):
+    """List of actions to execute in sequence"""
+
+    actions: list[ActionSequence] = Field(description="List of actions to execute")
+    delay: float = Field(default=2.0, ge=0.1, le=30.0, description="Delay between actions in seconds (default: 2.0)")
+
+
 class MoodUpdate(BaseModel):
     """Mood meter update parameters"""
 

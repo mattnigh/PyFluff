@@ -2,15 +2,14 @@
 """
 Make Furby sing by triggering a sequence of actions.
 
-This script sends actions 71,0,0,0 through 71,0,0,7 to the PyFluff server,
-waiting 1 second between each action.
+This script uses the action sequence API to send musical notes (71,0,0,0 through 71,0,0,7)
+to make Furby sing the octave scale: Do-Re-Mi-Fa-Sol-La-Ti-Do
 """
 
-import asyncio
 import sys
 import requests
 from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 
 console = Console()
 
@@ -43,77 +42,84 @@ def check_server() -> bool:
         return False
 
 
-def send_action(input_val: int, index: int, subindex: int, specific: int) -> bool:
-    """Send an action to the Furby via the API."""
+def send_sequence() -> bool:
+    """Send the singing sequence to Furby using the action sequence API."""
+    # Build the sequence of musical notes: Do-Re-Mi-Fa-Sol-La-Ti-Do
+    notes = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Ti", "Do"]
+    
+    sequence = {
+        "actions": [
+            {"input": 71, "index": 0, "subindex": 0, "specific": i}
+            for i in range(8)
+        ],
+        "delay": 3  # 3 seconds between each note
+    }
+    
+    console.print("[bold cyan]🎵 Making Furby Sing the Octave Scale! 🎵[/bold cyan]")
+    console.print(f"Notes: {' - '.join(notes)}\n")
+    
     try:
-        response = requests.post(
-            f"{SERVER_URL}/action",
-            json={
-                "input": input_val,
-                "index": index,
-                "subindex": subindex,
-                "specific": specific
-            },
-            timeout=5
-        )
-        
-        if response.status_code == 200:
-            return True
-        else:
-            error = response.json().get('detail', 'Unknown error')
-            console.print(f"[red]Action failed: {error}[/red]")
-            return False
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            console=console
+        ) as progress:
             
+            task = progress.add_task(
+                "Sending sequence to Furby...",
+                total=100
+            )
+            
+            response = requests.post(
+                f"{SERVER_URL}/actions/sequence",
+                json=sequence,
+                timeout=30  # Allow time for the full sequence
+            )
+            
+            progress.update(task, completed=50)
+            
+            if response.status_code == 200:
+                result = response.json()
+                progress.update(task, completed=100)
+                
+                console.print(f"\n[green]✓[/green] {result['message']}")
+                console.print(f"  Actions executed: {result['data']['actions_executed']}")
+                console.print(f"  Delay between notes: {result['data']['delay_used']}s")
+                return True
+            else:
+                error = response.json().get('detail', 'Unknown error')
+                console.print(f"\n[red]✗ Sequence failed: {error}[/red]")
+                return False
+                
+    except requests.exceptions.Timeout:
+        console.print("\n[red]✗ Request timed out - sequence may still be running[/red]")
+        return False
     except Exception as e:
-        console.print(f"[red]Error sending action: {e}[/red]")
+        console.print(f"\n[red]✗ Error sending sequence: {e}[/red]")
         return False
 
 
-async def sing():
+def sing() -> int:
     """Execute the singing sequence."""
-    console.print("[bold cyan]🎵 Making Furby Sing! 🎵[/bold cyan]\n")
-    
     # Check server connection
     if not check_server():
         return 1
     
     console.print("[green]✓[/green] Server connected\n")
     
-    # Execute actions 71,0,0,0 through 71,0,0,7
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console
-    ) as progress:
-        
-        for specific in range(8):
-            task = progress.add_task(
-                f"Sending action 71,0,0,{specific}...",
-                total=1
-            )
-            
-            success = send_action(71, 0, 0, specific)
-            
-            if success:
-                progress.update(task, completed=1)
-                console.print(f"[green]✓[/green] Action 71,0,0,{specific} sent")
-            else:
-                progress.update(task, completed=1)
-                console.print(f"[red]✗[/red] Action 71,0,0,{specific} failed")
-                return 1
-            
-            # Wait 1 second before next action (except after the last one)
-            if specific < 7:
-                await asyncio.sleep(2)
-    
-    console.print("\n[bold green]🎉 Singing sequence complete! 🎉[/bold green]")
-    return 0
+    # Send the sequence
+    if send_sequence():
+        console.print("\n[bold green]🎉 Furby finished singing! 🎉[/bold green]")
+        return 0
+    else:
+        return 1
 
 
 def main():
     """Main entry point."""
     try:
-        result = asyncio.run(sing())
+        result = sing()
         sys.exit(result)
     except KeyboardInterrupt:
         console.print("\n[yellow]Interrupted by user[/yellow]")
