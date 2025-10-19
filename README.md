@@ -328,6 +328,11 @@ All documentation is derived from the original bluefluff project's research.
 
 This project is based on the excellent reverse engineering work by [Jeija](https://github.com/Jeija) in the original [bluefluff](https://github.com/Jeija/bluefluff) project. All protocol documentation and understanding of Furby Connect's internals comes from that research.
 
+## Further Reading
+While researching this project, As well as BlueFluff, I found the following resources that you might also want to check out:
+- [Python tools for handling Furby Connect DLC files](https://github.com/ctxis/furby)
+- [FurBLE - Furby Web Bluetooth for Android](https://github.com/pdjstone/furby-web-bluetooth)
+
 ## Disclaimer
 
 **This information is for educational purposes only.** By using this software, you agree to solely take risks for damaging your hardware. You may brick your Furby when interfacing with it in unwarranted ways and you will almost certainly void any warranty you might have.
