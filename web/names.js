@@ -175,7 +175,7 @@ function initNameHelper() {
         });
         
         nameList.innerHTML = '';
-        filtered.slice(0, 50).forEach(name => {
+        filtered.forEach(name => {
             nameList.appendChild(createNameItem(name, term));
         });
         
