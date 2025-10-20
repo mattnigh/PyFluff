@@ -28,9 +28,9 @@ asyncio.run(delete_dlc())
 ```
 
 ### Flash the new DLC file
-Before flashing, I'd recommend you to turn on Nordic Packet ACKs. This will make Furby respond with Nordic notifications while downloading the DLC. That way, you will be able to tell if Furby is currently receiving the data you're sending. If those Nordic notifications disappear while flashing the Furby, you know that Furby has disconnected and you will have to start all over again.
+PyFluff automatically enables Nordic Packet ACKs before uploading DLC files. This feature sends periodic notifications from Furby while it's receiving data, allowing you to monitor the upload progress and detect connection issues. If the Nordic ACK notifications stop during upload, it means Furby has disconnected and you'll need to restart the process.
 
-For actually downloading the DLC, you can use PyFluff's DLC upload functionality:
+The upload process sends data in 20-byte chunks to the FileWrite characteristic. For actually downloading the DLC, you can use PyFluff's DLC upload functionality:
 
 ```python
 from pyfluff import FurbyConnect
@@ -41,9 +41,9 @@ async def flash_dlc():
     async with FurbyConnect.discover() as furby:
         dlc_manager = DLCManager(furby)
         
-        # Upload DLC file
+        # Upload DLC file (Nordic Packet ACK is enabled automatically)
         await dlc_manager.upload_dlc(
-            file_path="path/to/your/dlc_file.dlc",
+            dlc_path=Path("path/to/your/dlc_file.dlc"),
             slot=0
         )
         print("DLC uploaded successfully")
