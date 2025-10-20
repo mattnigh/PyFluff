@@ -107,6 +107,8 @@ The server will:
 
 Open your browser to `http://localhost:8080` (or your Raspberry Pi's IP address) to access the interactive control panel.
 
+<img src="docs/images/pyfluff.jpg" alt="PyFluff Web Interface" width="600" />
+
 ### API Documentation
 
 Interactive API documentation is available at:
