@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 # Global Furby instance
 furby: FurbyConnect | None = None
+connection_logs: list[WebSocket] = []
 
 
 @asynccontextmanager
@@ -88,6 +89,26 @@ def get_furby() -> FurbyConnect:
     if furby is None or not furby.connected:
         raise HTTPException(status_code=503, detail="Not connected to Furby")
     return furby
+
+
+async def broadcast_log(message: str, log_type: str = "info") -> None:
+    """Broadcast log message to all connected WebSocket clients."""
+    if not connection_logs:
+        return
+    
+    log_data = {"message": message, "type": log_type}
+    
+    # Send to all connected clients
+    disconnected = []
+    for ws in connection_logs:
+        try:
+            await ws.send_json(log_data)
+        except Exception:
+            disconnected.append(ws)
+    
+    # Remove disconnected clients
+    for ws in disconnected:
+        connection_logs.remove(ws)
 
 
 # API Endpoints
@@ -143,14 +164,34 @@ async def connect() -> CommandResponse:
     global furby
 
     if furby and furby.connected:
+        await broadcast_log("Already connected", "info")
         return CommandResponse(success=True, message="Already connected")
 
     try:
         furby = FurbyConnect()
-        await furby.connect()
-        return CommandResponse(success=True, message="Connected to Furby")
+        
+        # Create custom logging handler to broadcast to WebSocket
+        class WebSocketHandler(logging.Handler):
+            def emit(self, record):
+                log_type = "error" if record.levelno >= logging.ERROR else "success" if "success" in record.getMessage().lower() else "info"
+                asyncio.create_task(broadcast_log(record.getMessage(), log_type))
+        
+        # Add handler temporarily
+        ws_handler = WebSocketHandler()
+        ws_handler.setLevel(logging.INFO)
+        furby_logger = logging.getLogger("pyfluff.furby")
+        furby_logger.addHandler(ws_handler)
+        
+        try:
+            await furby.connect()
+            await broadcast_log("Connected to Furby", "success")
+            return CommandResponse(success=True, message="Connected to Furby")
+        finally:
+            furby_logger.removeHandler(ws_handler)
+            
     except Exception as e:
         logger.error(f"Connection failed: {e}")
+        await broadcast_log(f"Connection failed: {e}", "error")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -348,6 +389,28 @@ async def delete_dlc(slot: int) -> CommandResponse:
     dlc_manager = DLCManager(fb)
     await dlc_manager.delete_dlc(slot)
     return CommandResponse(success=True, message=f"DLC slot {slot} deleted")
+
+
+@app.websocket("/ws/logs")
+async def websocket_logs(websocket: WebSocket) -> None:
+    """WebSocket endpoint for streaming connection logs."""
+    await websocket.accept()
+    connection_logs.append(websocket)
+    logger.info("Log WebSocket client connected")
+    
+    try:
+        # Keep connection alive
+        while True:
+            await asyncio.sleep(1)
+    except WebSocketDisconnect:
+        logger.info("Log WebSocket client disconnected")
+        if websocket in connection_logs:
+            connection_logs.remove(websocket)
+    except Exception as e:
+        logger.error(f"Log WebSocket error: {e}")
+        if websocket in connection_logs:
+            connection_logs.remove(websocket)
+        await websocket.close()
 
 
 @app.websocket("/ws/sensors")

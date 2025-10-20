@@ -139,25 +139,49 @@ function initNameHelper() {
     const nameDropdown = document.getElementById('name-dropdown');
     const nameList = document.getElementById('name-list');
     const nameIdInput = document.getElementById('name-id');
-    const selectedNameDisplay = document.getElementById('selected-name-display');
     const setNameBtn = document.getElementById('btn-set-name');
+    let isDropdownOpen = false;
     
-    // Show dropdown on focus
-    nameSearch.addEventListener('focus', () => {
-        updateNameDropdown('');
-        nameDropdown.classList.remove('hidden');
+    // Set initial name value
+    const initialName = FURBY_NAMES.find(n => n.id === 47);
+    if (initialName) {
+        nameSearch.value = initialName.name;
+    }
+    
+    // Show dropdown on focus or click
+    nameSearch.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!isDropdownOpen) {
+            updateNameDropdown(nameSearch.value);
+            nameDropdown.classList.remove('hidden');
+            isDropdownOpen = true;
+        }
+    });
+    
+    nameSearch.addEventListener('focus', (e) => {
+        e.stopPropagation();
+        if (!isDropdownOpen) {
+            updateNameDropdown(nameSearch.value);
+            nameDropdown.classList.remove('hidden');
+            isDropdownOpen = true;
+        }
     });
     
     // Hide dropdown on click outside
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('.name-helper')) {
+        if (!e.target.closest('.name-selection-inline') && isDropdownOpen) {
             nameDropdown.classList.add('hidden');
+            isDropdownOpen = false;
         }
     });
     
     // Search as you type
     nameSearch.addEventListener('input', (e) => {
         updateNameDropdown(e.target.value);
+        if (!isDropdownOpen) {
+            nameDropdown.classList.remove('hidden');
+            isDropdownOpen = true;
+        }
     });
     
     function updateNameDropdown(searchTerm) {
@@ -180,7 +204,7 @@ function initNameHelper() {
         });
         
         if (filtered.length === 0) {
-            nameList.innerHTML = '<div class="action-item">No names found</div>';
+            nameList.innerHTML = '<div class=\"action-item\">No names found</div>';
         }
     }
     
@@ -206,11 +230,12 @@ function initNameHelper() {
         item.appendChild(title);
         item.appendChild(id);
         
-        item.addEventListener('click', () => {
+        item.addEventListener('click', (e) => {
+            e.stopPropagation();
             nameIdInput.value = name.id;
-            selectedNameDisplay.textContent = name.name;
-            nameSearch.value = '';
+            nameSearch.value = name.name;
             nameDropdown.classList.add('hidden');
+            isDropdownOpen = false;
         });
         
         return item;

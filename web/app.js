@@ -3,6 +3,7 @@
 const API_BASE = window.location.origin;
 let ws = null;
 let isMonitoring = false;
+let logWs = null;
 
 // Utility functions
 function log(message, type = 'info') {
@@ -16,6 +17,31 @@ function log(message, type = 'info') {
     while (logDiv.children.length > 50) {
         logDiv.removeChild(logDiv.lastChild);
     }
+}
+
+// Connect to log WebSocket for real-time connection messages
+function connectLogWebSocket() {
+    if (logWs && logWs.readyState === WebSocket.OPEN) {
+        return;
+    }
+    
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    logWs = new WebSocket(`${wsProtocol}//${window.location.host}/ws/logs`);
+    
+    logWs.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        log(data.message, data.type);
+    };
+    
+    logWs.onerror = () => {
+        console.error('Log WebSocket error');
+    };
+    
+    logWs.onclose = () => {
+        console.log('Log WebSocket closed');
+        // Try to reconnect after 2 seconds
+        setTimeout(connectLogWebSocket, 2000);
+    };
 }
 
 async function apiCall(endpoint, method = 'GET', body = null) {
@@ -459,3 +485,4 @@ function stopMonitoring() {
 updateStatus();
 setInterval(updateStatus, 10000); // Update status every 10 seconds
 updateColorMemoryDisplay(); // Display random initial colors in memory slots
+connectLogWebSocket(); // Connect to log WebSocket for real-time messages

@@ -8,187 +8,148 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <div class="header-title">
+        <!-- Top Status Bar -->
+        <header class="top-bar">
+            <div class="logo-section">
                 <img src="/static/images/pyfluff.svg" alt="PyFluff" class="logo">
                 <h1>PyFluff</h1>
             </div>
-            <p>Furby Connect Controller</p>
             <div id="status" class="status disconnected">Disconnected</div>
+            <div class="connection-controls">
+                <button id="btn-connect" class="btn btn-primary btn-sm">Connect</button>
+                <button id="btn-disconnect" class="btn btn-secondary btn-sm">Disconnect</button>
+            </div>
         </header>
 
-        <main>
-            <!-- Connection -->
-            <section class="card">
-                <h2>Connection</h2>
-                <div class="button-group">
-                    <button id="btn-connect" class="btn btn-primary">Connect</button>
-                    <button id="btn-disconnect" class="btn btn-secondary">Disconnect</button>
-                </div>
-                <div id="device-info"></div>
-            </section>
+        <main class="main-grid">
+            <!-- Left Column -->
+            <div class="left-column">
 
-            <!-- Antenna Color -->
-            <section class="card">
-                <h2>Antenna Color</h2>
-                <div class="antenna-container">
+                <!-- Antenna Color -->
+                <section class="card card-compact">
+                    <h2>Antenna Color</h2>
                     <div class="color-controls-wrapper">
                         <div class="color-controls">
                             <div class="slider-group">
-                                <label for="red-slider">Red:</label>
+                                <label for="red-slider">Red</label>
                                 <input type="range" id="red-slider" min="0" max="255" value="255">
                                 <span id="red-value">255</span>
                             </div>
                             <div class="slider-group">
-                                <label for="green-slider">Green:</label>
+                                <label for="green-slider">Green</label>
                                 <input type="range" id="green-slider" min="0" max="255" value="0">
                                 <span id="green-value">0</span>
                             </div>
                             <div class="slider-group">
-                                <label for="blue-slider">Blue:</label>
+                                <label for="blue-slider">Blue</label>
                                 <input type="range" id="blue-slider" min="0" max="255" value="0">
                                 <span id="blue-value">0</span>
                             </div>
                         </div>
-                        <div id="color-preview" style="background: rgb(255, 0, 0);" title="Click to resend current color"></div>
+                        <div id="color-preview" style="background: rgb(255, 0, 0);" title="Click to resend"></div>
                     </div>
                     <div class="preset-colors">
-                        <button class="color-preset" data-color="255,0,0" style="background: red;" title="Red"></button>
-                        <button class="color-preset" data-color="0,255,0" style="background: green;" title="Green"></button>
-                        <button class="color-preset" data-color="0,0,255" style="background: blue;" title="Blue"></button>
-                        <button class="color-preset" data-color="255,255,0" style="background: yellow;" title="Yellow"></button>
-                        <button class="color-preset" data-color="255,0,255" style="background: magenta;" title="Magenta"></button>
-                        <button class="color-preset" data-color="0,255,255" style="background: cyan;" title="Cyan"></button>
-                        <button class="color-preset" data-color="255,255,255" style="background: white; border: 2px solid #ddd;" title="White"></button>
-                        <button class="color-preset color-memory" data-slot="0" style="background: rgb(128,128,128);" title="Recent color 1"></button>
-                        <button class="color-preset color-memory" data-slot="1" style="background: rgb(128,128,128);" title="Recent color 2"></button>
-                        <button class="color-preset color-memory" data-slot="2" style="background: rgb(128,128,128);" title="Recent color 3"></button>
-                        <button class="color-preset color-memory" data-slot="3" style="background: rgb(128,128,128);" title="Recent color 4"></button>
-                        <button class="color-preset color-memory" data-slot="4" style="background: rgb(128,128,128);" title="Recent color 5"></button>
-                        <button class="color-preset" data-color="0,0,0" style="background: black;" title="Off"></button>
+                        <button class="color-preset" data-color="255,0,0" style="background: red;"></button>
+                        <button class="color-preset" data-color="0,255,0" style="background: green;"></button>
+                        <button class="color-preset" data-color="0,0,255" style="background: blue;"></button>
+                        <button class="color-preset" data-color="255,255,0" style="background: yellow;"></button>
+                        <button class="color-preset" data-color="255,0,255" style="background: magenta;"></button>
+                        <button class="color-preset" data-color="0,255,255" style="background: cyan;"></button>
+                        <button class="color-preset" data-color="255,255,255" style="background: white; border: 2px solid #ddd;"></button>
+                        <button class="color-preset color-memory" data-slot="0" style="background: rgb(128,128,128);"></button>
+                        <button class="color-preset color-memory" data-slot="1" style="background: rgb(128,128,128);"></button>
+                        <button class="color-preset color-memory" data-slot="2" style="background: rgb(128,128,128);"></button>
+                        <button class="color-preset color-memory" data-slot="3" style="background: rgb(128,128,128);"></button>
+                        <button class="color-preset color-memory" data-slot="4" style="background: rgb(128,128,128);"></button>
+                        <button class="color-preset" data-color="0,0,0" style="background: black;"></button>
                     </div>
-                </div>
-            </section>
+                </section>
 
-            <!-- Quick Actions -->
-            <section class="card">
-                <h2>Quick Actions</h2>
-                <div class="button-grid">
-                    <button class="btn btn-action" data-action="24,2,1,6">Hello</button>
-                    <button class="btn btn-action" data-action="55,2,14,0">Giggle</button>
-                    <button class="btn btn-action" data-action="7,0,1,0">Wait</button>
-                    <button id="btn-lcd-on" class="btn btn-action">LCD On</button>
-                    <button id="btn-lcd-off" class="btn btn-action">LCD Off</button>
-                    <button id="btn-debug" class="btn btn-action">Debug Menu</button>
-                </div>
-            </section>
+                <!-- Mood Control -->
+                <section class="card card-compact">
+                    <h2>Mood</h2>
+                    <div class="mood-controls">
+                        <div class="slider-group">
+                            <label for="mood-excitedness">Excited</label>
+                            <input type="range" id="mood-excitedness" class="mood-slider" data-mood="excitedness" min="0" max="100" value="50">
+                            <span id="excitedness-value">50</span>
+                        </div>
+                        <div class="slider-group">
+                            <label for="mood-displeasedness">Displeased</label>
+                            <input type="range" id="mood-displeasedness" class="mood-slider" data-mood="displeasedness" min="0" max="100" value="0">
+                            <span id="displeasedness-value">0</span>
+                        </div>
+                        <div class="slider-group">
+                            <label for="mood-tiredness">Tired</label>
+                            <input type="range" id="mood-tiredness" class="mood-slider" data-mood="tiredness" min="0" max="100" value="0">
+                            <span id="tiredness-value">0</span>
+                        </div>
+                        <div class="slider-group">
+                            <label for="mood-fullness">Full</label>
+                            <input type="range" id="mood-fullness" class="mood-slider" data-mood="fullness" min="0" max="100" value="50">
+                            <span id="fullness-value">50</span>
+                        </div>
+                        <div class="slider-group">
+                            <label for="mood-wellness">Wellness</label>
+                            <input type="range" id="mood-wellness" class="mood-slider" data-mood="wellness" min="0" max="100" value="50">
+                            <span id="wellness-value">50</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
 
-            <!-- Custom Action -->
-            <section class="card">
-                <h2>Custom Action</h2>
-                <div class="action-helper">
-                    <label for="action-search">Search Actions:</label>
-                    <input type="text" id="action-search" placeholder="Type to search actions..." autocomplete="off">
-                    <div id="action-dropdown" class="action-dropdown hidden">
-                        <div id="action-list" class="action-list"></div>
-                        <div id="recent-actions" class="recent-actions"></div>
+            <!-- Right Column -->
+            <div class="right-column">
+                <!-- Actions -->
+                <section class="card card-compact">
+                    <h2>Actions</h2>
+                    <div class="button-grid-compact">
+                        <button class="btn btn-action btn-sm" data-action="24,2,1,6">Hello</button>
+                        <button class="btn btn-action btn-sm" data-action="55,2,14,0">Giggle</button>
+                        <button class="btn btn-action btn-sm" data-action="7,0,1,0">Wait</button>
+                        <button id="btn-lcd-on" class="btn btn-action btn-sm">LCD On</button>
+                        <button id="btn-lcd-off" class="btn btn-action btn-sm">LCD Off</button>
+                        <button id="btn-debug" class="btn btn-action btn-sm">Debug</button>
                     </div>
-                </div>
-                <div class="input-group">
-                    <label>Input: <input type="number" id="action-input" min="0" max="255" value="55"></label>
-                    <label>Index: <input type="number" id="action-index" min="0" max="255" value="2"></label>
-                    <label>Subindex: <input type="number" id="action-subindex" min="0" max="255" value="14"></label>
-                    <label>Specific: <input type="number" id="action-specific" min="0" max="255" value="0"></label>
-                </div>
-                <div id="action-description" class="action-description"></div>
-                <button id="btn-custom-action" class="btn btn-primary">Trigger Action</button>
-            </section>
+                    
+                    <div class="action-helper">
+                        <label for="action-search">Search</label>
+                        <input type="text" id="action-search" placeholder="Search actions..." autocomplete="off">
+                        <div id="action-dropdown" class="action-dropdown hidden">
+                            <div id="action-list" class="action-list"></div>
+                            <div id="recent-actions" class="recent-actions"></div>
+                        </div>
+                    </div>
+                    <div class="action-coords">
+                        <input type="number" id="action-input" min="0" max="255" value="55" placeholder="Input">
+                        <input type="number" id="action-index" min="0" max="255" value="2" placeholder="Index">
+                        <input type="number" id="action-subindex" min="0" max="255" value="14" placeholder="Sub">
+                        <input type="number" id="action-specific" min="0" max="255" value="0" placeholder="Spec">
+                        <button id="btn-custom-action" class="btn btn-primary btn-sm">Trigger</button>
+                    </div>
+                    <div id="action-description" class="action-description"></div>
+                </section>
 
-            <!-- Mood Control -->
-            <section class="card">
-                <h2>Mood Control</h2>
-                <div class="mood-controls">
-                    <div class="slider-group">
-                        <label for="mood-excitedness">Excitedness:</label>
-                        <input type="range" id="mood-excitedness" class="mood-slider" data-mood="excitedness" min="0" max="100" value="50">
-                        <span id="excitedness-value">50</span>
+                <!-- Name Selection -->
+                <section class="card card-compact">
+                    <h2>Furby Name</h2>
+                    <div class="name-selection-inline">
+                        <input type="text" id="name-search" placeholder="Search or type name..." autocomplete="off">
+                        <input type="number" id="name-id" min="0" max="128" value="47" readonly title="Name ID">
+                        <button id="btn-set-name" class="btn btn-primary btn-sm">Set</button>
+                        <div id="name-dropdown" class="action-dropdown hidden">
+                            <div id="name-list" class="action-list"></div>
+                        </div>
                     </div>
-                    <div class="slider-group">
-                        <label for="mood-displeasedness">Displeasedness:</label>
-                        <input type="range" id="mood-displeasedness" class="mood-slider" data-mood="displeasedness" min="0" max="100" value="0">
-                        <span id="displeasedness-value">0</span>
-                    </div>
-                    <div class="slider-group">
-                        <label for="mood-tiredness">Tiredness:</label>
-                        <input type="range" id="mood-tiredness" class="mood-slider" data-mood="tiredness" min="0" max="100" value="0">
-                        <span id="tiredness-value">0</span>
-                    </div>
-                    <div class="slider-group">
-                        <label for="mood-fullness">Fullness:</label>
-                        <input type="range" id="mood-fullness" class="mood-slider" data-mood="fullness" min="0" max="100" value="50">
-                        <span id="fullness-value">50</span>
-                    </div>
-                    <div class="slider-group">
-                        <label for="mood-wellness">Wellness:</label>
-                        <input type="range" id="mood-wellness" class="mood-slider" data-mood="wellness" min="0" max="100" value="50">
-                        <span id="wellness-value">50</span>
-                    </div>
-                </div>
-                <p class="mood-info">Drag sliders to adjust mood values (0-100). Changes apply automatically when released.</p>
-            </section>
-
-            <!-- Name Selection -->
-            <section class="card">
-                <h2>Furby Name</h2>
-                <div class="name-helper">
-                    <label for="name-search">Search Names:</label>
-                    <input type="text" id="name-search" placeholder="Type to search names (e.g., Dee-Koh)..." autocomplete="off">
-                    <div id="name-dropdown" class="action-dropdown hidden">
-                        <div id="name-list" class="action-list"></div>
-                    </div>
-                </div>
-                <div class="name-selection">
-                    <label for="name-id">Selected Name ID:</label>
-                    <input type="number" id="name-id" min="0" max="128" value="47" readonly>
-                    <span id="selected-name-display" class="name-preview">Dee-Koh</span>
-                </div>
-                <button id="btn-set-name" class="btn btn-primary">Set Name</button>
-            </section>
-
-            <!-- DLC Management -->
-            <!-- <section class="card">
-                <h2>DLC Management</h2>
-                <div class="input-group">
-                    <label>Upload DLC:
-                        <input type="file" id="dlc-file" accept=".dlc,.DLC">
-                    </label>
-                    <label>Slot: <input type="number" id="dlc-slot" min="0" max="255" value="2"></label>
-                </div>
-                <button id="btn-upload-dlc" class="btn btn-primary">Upload DLC</button>
-                
-                <div class="button-group" style="margin-top: 1rem;">
-                    <button id="btn-load-dlc" class="btn btn-secondary">Load DLC</button>
-                    <button id="btn-activate-dlc" class="btn btn-secondary">Activate DLC</button>
-                </div>
-            </section> -->
-
-            <!-- Sensor Monitor -->
-            <section class="card">
-                <h2>Sensor Monitor</h2>
-                <button id="btn-monitor" class="btn btn-primary">Start Monitoring</button>
-                <div id="sensor-data" class="sensor-data"></div>
-            </section>
+                </section>
+            </div>
 
             <!-- Log -->
-            <section class="card">
+            <section class="card card-compact card-full-width">
                 <h2>Log</h2>
                 <div id="log" class="log"></div>
             </section>
         </main>
-
-        <footer>
-            <p>PyFluff v1.0.0 | <a href="/docs" target="_blank">API Docs</a> | <a href="https://github.com/martinwoodward/PyFluff" target="_blank">View Source on GitHub</a></p>
-        </footer>
     </div>
 
     <script id="action-data" type="application/json">[]</script>
