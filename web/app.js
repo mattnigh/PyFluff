@@ -26,19 +26,24 @@ function connectLogWebSocket() {
     }
     
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    logWs = new WebSocket(`${wsProtocol}//${window.location.host}/ws/logs`);
+    const wsUrl = `${wsProtocol}//${window.location.host}/ws/logs`;
+    logWs = new WebSocket(wsUrl);
+    
+    logWs.onopen = () => {
+        log('Ready for connection', 'info');
+    };
     
     logWs.onmessage = (event) => {
         const data = JSON.parse(event.data);
         log(data.message, data.type);
     };
     
-    logWs.onerror = () => {
-        console.error('Log WebSocket error');
+    logWs.onerror = (error) => {
+        log('WebSocket connection error', 'error');
     };
     
     logWs.onclose = () => {
-        console.log('Log WebSocket closed');
+        logWs = null;
         // Try to reconnect after 2 seconds
         setTimeout(connectLogWebSocket, 2000);
     };
@@ -73,23 +78,24 @@ async function apiCall(endpoint, method = 'GET', body = null) {
 async function updateStatus() {
     try {
         const status = await apiCall('/status');
-        const statusDiv = document.getElementById('status');
+        const statusIndicator = document.getElementById('status-indicator');
+        const statusText = document.getElementById('status-text');
         const deviceInfo = document.getElementById('device-info');
         
         if (status.connected) {
-            statusDiv.textContent = 'Connected';
-            statusDiv.className = 'status connected';
+            statusIndicator.className = 'status-indicator connected';
+            statusText.textContent = 'Connected';
             
             let info = `Device: ${status.device_name || 'Unknown'}<br>`;
             info += `Address: ${status.device_address || 'Unknown'}<br>`;
             if (status.firmware_version) {
                 info += `Firmware: ${status.firmware_version}`;
             }
-            deviceInfo.innerHTML = info;
+            if (deviceInfo) deviceInfo.innerHTML = info;
         } else {
-            statusDiv.textContent = 'Disconnected';
-            statusDiv.className = 'status disconnected';
-            deviceInfo.innerHTML = '';
+            statusIndicator.className = 'status-indicator disconnected';
+            statusText.textContent = 'Disconnected';
+            if (deviceInfo) deviceInfo.innerHTML = '';
         }
     } catch (error) {
         console.error('Failed to update status:', error);
@@ -99,8 +105,8 @@ async function updateStatus() {
 // Connection handlers
 document.getElementById('btn-connect').addEventListener('click', async () => {
     try {
+        log('Initiating connection...', 'info');
         const result = await apiCall('/connect', 'POST');
-        log(result.message, 'success');
         await updateStatus();
     } catch (error) {
         log(`Connection failed: ${error.message}`, 'error');
@@ -419,67 +425,6 @@ document.getElementById('btn-activate-dlc').addEventListener('click', async () =
     }
 });
 */
-
-// Sensor monitoring
-document.getElementById('btn-monitor').addEventListener('click', () => {
-    if (isMonitoring) {
-        stopMonitoring();
-    } else {
-        startMonitoring();
-    }
-});
-
-function startMonitoring() {
-    const btn = document.getElementById('btn-monitor');
-    const sensorDiv = document.getElementById('sensor-data');
-    
-    btn.textContent = 'Stop Monitoring';
-    btn.className = 'btn btn-secondary';
-    isMonitoring = true;
-    
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    ws = new WebSocket(`${wsProtocol}//${window.location.host}/ws/sensors`);
-    
-    ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        const entry = document.createElement('div');
-        entry.textContent = `[${new Date(data.timestamp * 1000).toLocaleTimeString()}] ${data.raw_data}`;
-        sensorDiv.insertBefore(entry, sensorDiv.firstChild);
-        
-        // Keep only last 20 entries
-        while (sensorDiv.children.length > 20) {
-            sensorDiv.removeChild(sensorDiv.lastChild);
-        }
-    };
-    
-    ws.onerror = (error) => {
-        log('WebSocket error', 'error');
-        stopMonitoring();
-    };
-    
-    ws.onclose = () => {
-        if (isMonitoring) {
-            log('Monitoring connection closed', 'error');
-            stopMonitoring();
-        }
-    };
-    
-    log('Started sensor monitoring', 'success');
-}
-
-function stopMonitoring() {
-    const btn = document.getElementById('btn-monitor');
-    btn.textContent = 'Start Monitoring';
-    btn.className = 'btn btn-primary';
-    isMonitoring = false;
-    
-    if (ws) {
-        ws.close();
-        ws = null;
-    }
-    
-    log('Stopped sensor monitoring', 'success');
-}
 
 // Initialize
 updateStatus();

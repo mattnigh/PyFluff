@@ -14,7 +14,10 @@
                 <img src="/static/images/pyfluff.svg" alt="PyFluff" class="logo">
                 <h1>PyFluff</h1>
             </div>
-            <div id="status" class="status disconnected">Disconnected</div>
+            <div class="status">
+                <span id="status-indicator" class="status-indicator"></span>
+                <span id="status-text">Checking...</span>
+            </div>
             <div class="connection-controls">
                 <button id="btn-connect" class="btn btn-primary btn-sm">Connect</button>
                 <button id="btn-disconnect" class="btn btn-secondary btn-sm">Disconnect</button>

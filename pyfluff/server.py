@@ -168,13 +168,18 @@ async def connect() -> CommandResponse:
         return CommandResponse(success=True, message="Already connected")
 
     try:
+        # Send initial message
+        await broadcast_log("Initiating connection...", "info")
+        
         furby = FurbyConnect()
         
         # Create custom logging handler to broadcast to WebSocket
         class WebSocketHandler(logging.Handler):
             def emit(self, record):
                 log_type = "error" if record.levelno >= logging.ERROR else "success" if "success" in record.getMessage().lower() else "info"
-                asyncio.create_task(broadcast_log(record.getMessage(), log_type))
+                # Use asyncio to schedule the broadcast
+                loop = asyncio.get_event_loop()
+                loop.create_task(broadcast_log(record.getMessage(), log_type))
         
         # Add handler temporarily
         ws_handler = WebSocketHandler()
