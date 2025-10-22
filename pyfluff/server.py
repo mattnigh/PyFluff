@@ -263,6 +263,27 @@ async def connect(request: ConnectRequest | None = None) -> CommandResponse:
                 except Exception as e:
                     logger.warning(f"Could not update cache: {e}")
             
+            # Short pause to let connection stabilize
+            await asyncio.sleep(0.5)
+            
+            # Toggle debug menu
+            try:
+                await furby.cycle_debug_menu()
+                await broadcast_log("Debug menu toggled", "success")
+            except Exception as e:
+                logger.warning(f"Could not toggle debug menu: {e}")
+            
+            # Flash antenna red twice
+            try:
+                for i in range(2):
+                    await furby.set_antenna_color(255, 0, 0)
+                    await asyncio.sleep(0.3)
+                    await furby.set_antenna_color(0, 0, 0)
+                    await asyncio.sleep(0.3)
+                await broadcast_log("Connection sequence complete", "success")
+            except Exception as e:
+                logger.warning(f"Could not flash antenna: {e}")
+            
             return CommandResponse(success=True, message="Connected to Furby")
         finally:
             furby_logger.removeHandler(ws_handler)
