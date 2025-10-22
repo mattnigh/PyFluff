@@ -57,6 +57,14 @@ class SensorData(BaseModel):
     # Additional fields can be added as protocol is better understood
 
 
+class ConnectRequest(BaseModel):
+    """Request to connect to a Furby"""
+
+    address: str | None = Field(None, description="MAC address to connect to directly (optional)")
+    timeout: float = Field(15.0, ge=1.0, le=60.0, description="Connection timeout per attempt in seconds")
+    retries: int = Field(3, ge=1, le=10, description="Number of connection attempts (useful for F2F mode)")
+
+
 class FurbyStatus(BaseModel):
     """Current Furby connection status"""
 
@@ -83,3 +91,24 @@ class FurbyInfo(BaseModel):
     hardware_revision: str | None = None
     firmware_revision: str | None = None
     software_revision: str | None = None
+
+
+class KnownFurby(BaseModel):
+    """Known Furby device cache entry"""
+
+    address: str = Field(description="MAC address of the Furby")
+    name: str | None = Field(None, description="Last known Furby name")
+    name_id: int | None = Field(None, description="Last known name ID (0-128)")
+    device_name: str | None = Field(None, description="BLE device name")
+    last_seen: float = Field(description="Unix timestamp of last connection")
+    firmware_revision: str | None = Field(None, description="Firmware version if known")
+    
+    model_config = ConfigDict(extra="allow")
+
+
+class KnownFurbiesConfig(BaseModel):
+    """Configuration file for known Furbies"""
+
+    furbies: dict[str, KnownFurby] = Field(default_factory=dict, description="Map of MAC address to KnownFurby")
+    
+    model_config = ConfigDict(extra="allow")

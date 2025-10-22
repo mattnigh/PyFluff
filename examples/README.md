@@ -43,6 +43,30 @@ Upload custom DLC (DownLoadable Content) files to add new animations, sounds, an
 python examples/custom_dlc.py path/to/custom.dlc --slot 2
 ```
 
+### f2f_connection.py
+**NEW!** Connect to Furbies that are in F2F (Furby-to-Furby) communication mode by using their MAC address directly.
+
+```bash
+# Show connection method comparison
+python examples/f2f_connection.py
+
+# Connect to a specific Furby by MAC address
+python examples/f2f_connection.py AA:BB:CC:DD:EE:FF
+```
+
+Features:
+- Bypass BLE discovery when Furbies are in F2F mode
+- Direct connection by MAC address
+- Works even when Furby isn't advertising
+- Demonstrates connection troubleshooting
+- Tests control with antenna color cycling
+
+**Use cases:**
+- Connecting to Furbies that are actively communicating with each other
+- Reliable connection when normal discovery fails
+- Multi-Furby setups where you need to target specific devices
+- Development and debugging scenarios
+
 ## Requirements
 
 All examples require:

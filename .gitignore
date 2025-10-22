@@ -56,3 +56,4 @@ dmypy.json
 *.DLC
 temp/
 tmp/
+known_furbies.json

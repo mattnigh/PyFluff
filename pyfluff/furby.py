@@ -22,6 +22,11 @@ from pyfluff.protocol import (
     MoodMeterType,
 )
 
+# Import FurbyCache with TYPE_CHECKING to avoid circular imports
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from pyfluff.furby_cache import FurbyCache
+
 logger = logging.getLogger(__name__)
 
 
@@ -53,30 +58,60 @@ class FurbyConnect:
         return self._connected and self.client is not None and self.client.is_connected
 
     @staticmethod
-    async def discover(timeout: float = 10.0) -> list[BLEDevice]:
+    async def discover(
+        timeout: float = 10.0, 
+        show_all: bool = False,
+        cache: "FurbyCache | None" = None
+    ) -> list[BLEDevice]:
         """
         Discover nearby Furby Connect devices.
 
         Args:
             timeout: Scan timeout in seconds
+            show_all: If True, show all BLE devices (useful for finding non-advertising Furbies)
+            cache: Optional FurbyCache to update with discovered devices
 
         Returns:
-            List of discovered Furby devices
+            List of discovered Furby devices (or all devices if show_all=True)
         """
-        logger.info(f"Scanning for Furby devices (timeout: {timeout}s)...")
+        logger.info(f"Scanning for {'all BLE' if show_all else 'Furby'} devices (timeout: {timeout}s)...")
         devices = await BleakScanner.discover(timeout=timeout)
+        
+        if show_all:
+            logger.info(f"Found {len(devices)} total BLE device(s)")
+            return devices
+        
         furbies = [d for d in devices if d.name and FURBY_NAME in d.name]
         logger.info(f"Found {len(furbies)} Furby device(s)")
+        
+        # Update cache with discovered Furbies
+        if cache is not None:
+            for device in furbies:
+                cache.add_or_update(
+                    address=device.address,
+                    device_name=device.name
+                )
+                logger.debug(f"Updated cache for {device.address}")
+        
+        if len(furbies) == 0:
+            logger.warning("No Furbies found. They may be in F2F mode. Try:")
+            logger.warning("  1. Use discover(show_all=True) to see all BLE devices")
+            logger.warning("  2. Connect directly by MAC address if known")
+            logger.warning("  3. Wake Furby from F2F mode by pressing its sensors")
+        
         return furbies
 
-    async def connect(self, timeout: float = 10.0) -> None:
+    async def connect(self, address: str | None = None, timeout: float = 10.0, retries: int = 3) -> None:
         """
         Connect to a Furby device.
 
         If no device was provided during initialization, will scan for one.
+        You can also provide a MAC address to connect directly without discovery.
 
         Args:
-            timeout: Connection timeout in seconds
+            address: Optional MAC address to connect to directly (bypasses discovery)
+            timeout: Connection timeout in seconds per attempt
+            retries: Number of connection attempts (useful for F2F mode)
 
         Raises:
             RuntimeError: If no Furby found or connection fails
@@ -85,18 +120,78 @@ class FurbyConnect:
             logger.warning("Already connected to Furby")
             return
 
+        # Connect directly by address if provided
+        if address is not None:
+            logger.info(f"Connecting directly to Furby at {address}...")
+            logger.debug(f"Using {retries} retries with {timeout}s timeout per attempt")
+            
+            # Try multiple connection attempts (helpful for F2F mode)
+            last_error = None
+            for attempt in range(retries):
+                if attempt > 0:
+                    logger.info(f"Connection attempt {attempt + 1} of {retries}...")
+                    await asyncio.sleep(1)  # Brief delay between retries
+                
+                try:
+                    self.client = BleakClient(address, timeout=timeout)
+                    await self.client.connect()
+                    self._connected = True
+                    
+                    # Create a pseudo-device object for later reference
+                    # Bleak doesn't expose the device object after connection,
+                    # so we create a minimal one with the address
+                    class SimpleDevice:
+                        def __init__(self, addr):
+                            self.address = addr
+                            self.name = "Furby"  # Default name
+                    
+                    if not self.device:
+                        self.device = SimpleDevice(address)
+                    
+                    logger.info(f"Connected successfully on attempt {attempt + 1}")
+                    
+                    # Subscribe to notifications
+                    await self._subscribe_notifications()
+                    
+                    # Start idle keepalive
+                    self._start_idle()
+                    
+                    return  # Success!
+                    
+                except Exception as e:
+                    last_error = e
+                    logger.debug(f"Attempt {attempt + 1} failed: {e}")
+                    if self.client:
+                        try:
+                            await self.client.disconnect()
+                        except:
+                            pass
+                        self.client = None
+                    self._connected = False
+            
+            # All retries failed
+            raise RuntimeError(
+                f"Failed to connect to Furby at {address} after {retries} attempts. "
+                f"Last error: {last_error}. "
+                f"Tips: 1) Ensure Furby is powered on and in range. "
+                f"2) Try waking Furby by touching sensors. "
+                f"3) Verify MAC address is correct."
+            )
+            
         # Discover device if not provided
-        if self.device is None:
+        elif self.device is None:
             devices = await self.discover(timeout)
             if not devices:
-                raise RuntimeError("No Furby devices found")
+                raise RuntimeError("No Furby devices found. Try connecting by MAC address if Furby is in F2F mode.")
             self.device = devices[0]
             logger.info(f"Selected Furby: {self.device.address}")
+            self.client = BleakClient(self.device, timeout=timeout)
+        else:
+            # Use pre-configured device
+            logger.info(f"Connecting to pre-configured Furby at {self.device.address}...")
+            self.client = BleakClient(self.device, timeout=timeout)
 
-        # Connect to device
-        logger.info(f"Connecting to Furby at {self.device.address}...")
-        self.client = BleakClient(self.device, timeout=timeout)
-
+        # For discovery-based connection (single attempt)
         try:
             await self.client.connect()
             self._connected = True

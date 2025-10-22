@@ -8,6 +8,7 @@ This directory contains comprehensive documentation about the Furby Connect Blue
 - **[bluetooth.md](bluetooth.md)** - BLE GATT hierarchy and characteristic UUIDs
 - **[generalplus.md](generalplus.md)** - GeneralPlus processor commands and responses
 - **[nordic.md](nordic.md)** - Nordic processor commands and responses
+- **[f2f-connectivity.md](f2f-connectivity.md)** - Connecting to Furbies in F2F (Furby-to-Furby) mode
 
 ### Behavior and Content
 - **[actions.md](actions.md)** - Overview of action sequences and triggering

@@ -19,6 +19,35 @@ function log(message, type = 'info') {
     }
 }
 
+// Load known Furbies into dropdown
+async function loadKnownFurbies() {
+    try {
+        const response = await fetch(`${API_BASE}/known-furbies`);
+        const data = await response.json();
+        
+        const select = document.getElementById('known-furbies');
+        // Clear existing options except first one
+        while (select.options.length > 1) {
+            select.remove(1);
+        }
+        
+        if (data.furbies && data.furbies.length > 0) {
+            data.furbies.forEach(furby => {
+                const option = document.createElement('option');
+                option.value = furby.address;
+                const lastSeen = new Date(furby.last_seen * 1000).toLocaleDateString();
+                const label = furby.name ? 
+                    `${furby.address} - ${furby.name} (${lastSeen})` :
+                    `${furby.address} (${lastSeen})`;
+                option.textContent = label;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Failed to load known Furbies:', error);
+    }
+}
+
 // Connect to log WebSocket for real-time connection messages
 function connectLogWebSocket() {
     if (logWs && logWs.readyState === WebSocket.OPEN) {
@@ -103,13 +132,31 @@ async function updateStatus() {
 }
 
 // Connection handlers
+// Handle known Furby selection
+document.getElementById('known-furbies').addEventListener('change', (e) => {
+    const macAddress = e.target.value;
+    if (macAddress) {
+        document.getElementById('mac-address').value = macAddress;
+    }
+});
+
 document.getElementById('btn-connect').addEventListener('click', async () => {
     try {
-        log('Initiating connection...', 'info');
-        const result = await apiCall('/connect', 'POST');
+        const macAddress = document.getElementById('mac-address').value.trim();
+        const body = macAddress ? { address: macAddress } : {};
+        
+        if (macAddress) {
+            log(`Connecting to Furby at ${macAddress}...`, 'info');
+        } else {
+            log('Scanning for Furby devices...', 'info');
+        }
+        
+        const result = await apiCall('/connect', 'POST', body);
         await updateStatus();
+        await loadKnownFurbies(); // Refresh known Furbies after connection
     } catch (error) {
         log(`Connection failed: ${error.message}`, 'error');
+        log('💡 Tip: If Furby is in F2F mode, try entering its MAC address', 'info');
     }
 });
 
@@ -428,6 +475,7 @@ document.getElementById('btn-activate-dlc').addEventListener('click', async () =
 
 // Initialize
 updateStatus();
+loadKnownFurbies(); // Load known Furbies dropdown
 setInterval(updateStatus, 10000); // Update status every 10 seconds
 updateColorMemoryDisplay(); // Display random initial colors in memory slots
 connectLogWebSocket(); // Connect to log WebSocket for real-time messages

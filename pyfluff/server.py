@@ -16,12 +16,14 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 from pyfluff.furby import FurbyConnect
+from pyfluff.furby_cache import FurbyCache
 from pyfluff.dlc import DLCManager
 from pyfluff.models import (
     ActionSequence,
     ActionList,
     AntennaColor,
     CommandResponse,
+    ConnectRequest,
     FurbyStatus,
     MoodUpdate,
 )
@@ -34,19 +36,30 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Global Furby instance
+# Global Furby instance and cache
 furby: FurbyConnect | None = None
+furby_cache: FurbyCache | None = None
 connection_logs: list[WebSocket] = []
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Lifespan context manager for FastAPI app."""
-    global furby
+    global furby, furby_cache
 
-    # Startup: Don't auto-connect, let user connect via UI
+    # Startup: Load cache and prepare for connections
     logger.info("PyFluff server starting up...")
     furby = None
+    
+    # Initialize Furby cache
+    try:
+        furby_cache = FurbyCache("known_furbies.json")
+        known_count = len(furby_cache.get_all())
+        logger.info(f"Loaded Furby cache with {known_count} known device(s)")
+    except Exception as e:
+        logger.error(f"Failed to initialize cache: {e}")
+        furby_cache = FurbyCache()  # Start with empty cache
+    
     logger.info("Server ready. Connect to Furby via the web interface.")
 
     yield
@@ -158,18 +171,63 @@ async def get_status() -> FurbyStatus:
     return status
 
 
+@app.get("/known-furbies", response_model=dict)
+async def get_known_furbies() -> dict:
+    """Get list of all known Furby devices from cache."""
+    if furby_cache is None:
+        return {"furbies": [], "count": 0}
+    
+    furbies = furby_cache.get_all()
+    return {
+        "furbies": [f.model_dump() for f in furbies],
+        "count": len(furbies)
+    }
+
+
+@app.delete("/known-furbies/{address}", response_model=CommandResponse)
+async def remove_known_furby(address: str) -> CommandResponse:
+    """Remove a Furby from the known devices cache."""
+    if furby_cache is None:
+        raise HTTPException(status_code=503, detail="Cache not initialized")
+    
+    if furby_cache.remove(address):
+        return CommandResponse(success=True, message=f"Removed {address} from cache")
+    else:
+        raise HTTPException(status_code=404, detail="Furby not found in cache")
+
+
+@app.delete("/known-furbies", response_model=CommandResponse)
+async def clear_known_furbies() -> CommandResponse:
+    """Clear all known Furby devices from cache."""
+    if furby_cache is None:
+        raise HTTPException(status_code=503, detail="Cache not initialized")
+    
+    furby_cache.clear()
+    return CommandResponse(success=True, message="Cache cleared")
+
+
 @app.post("/connect", response_model=CommandResponse)
-async def connect() -> CommandResponse:
-    """Connect to a Furby device."""
-    global furby
+async def connect(request: ConnectRequest | None = None) -> CommandResponse:
+    """Connect to a Furby device. Optionally provide MAC address to connect directly."""
+    global furby, furby_cache
 
     if furby and furby.connected:
         await broadcast_log("Already connected", "info")
         return CommandResponse(success=True, message="Already connected")
 
     try:
+        # Extract connection parameters
+        address = request.address if request else None
+        timeout = request.timeout if request else 15.0
+        retries = request.retries if request else 3
+        
         # Send initial message
-        await broadcast_log("Initiating connection...", "info")
+        if address:
+            await broadcast_log(f"Connecting to Furby at {address}...", "info")
+            if retries > 1:
+                await broadcast_log(f"Using {retries} connection attempts (F2F mode support)", "info")
+        else:
+            await broadcast_log("Scanning for Furby devices...", "info")
         
         furby = FurbyConnect()
         
@@ -188,8 +246,23 @@ async def connect() -> CommandResponse:
         furby_logger.addHandler(ws_handler)
         
         try:
-            await furby.connect()
+            await furby.connect(address=address, timeout=timeout, retries=retries)
             await broadcast_log("Connected to Furby", "success")
+            
+            # Update cache after successful connection
+            if furby_cache and furby.device:
+                try:
+                    # Get device info for firmware version
+                    info = await furby.get_device_info()
+                    furby_cache.add_or_update(
+                        address=furby.device.address,
+                        device_name=furby.device.name,
+                        firmware_revision=info.firmware_revision
+                    )
+                    logger.info(f"Updated cache for {furby.device.address}")
+                except Exception as e:
+                    logger.warning(f"Could not update cache: {e}")
+            
             return CommandResponse(success=True, message="Connected to Furby")
         finally:
             furby_logger.removeHandler(ws_handler)
@@ -299,11 +372,28 @@ async def cycle_debug_menu() -> CommandResponse:
 @app.post("/name/{name_id}", response_model=CommandResponse)
 async def set_name(name_id: int) -> CommandResponse:
     """Set Furby name by ID (0-128)."""
+    global furby_cache
+    
     if not 0 <= name_id <= 128:
         raise HTTPException(status_code=400, detail="Name ID must be between 0 and 128")
 
     fb = get_furby()
     await fb.set_name(name_id)
+    
+    # Update cache with new name
+    if furby_cache and fb.device:
+        try:
+            # Note: We store the name_id, but could also map to actual name string
+            # from the names database if needed
+            furby_cache.update_name(
+                address=fb.device.address,
+                name=f"Name ID {name_id}",  # Could be enhanced with actual name lookup
+                name_id=name_id
+            )
+            logger.info(f"Updated name in cache for {fb.device.address}")
+        except Exception as e:
+            logger.warning(f"Could not update name in cache: {e}")
+    
     return CommandResponse(success=True, message=f"Name set to ID {name_id}")
 
 

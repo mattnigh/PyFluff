@@ -144,8 +144,17 @@ python examples/action_sequence.py
 # Scan for Furby devices
 python -m pyfluff.cli scan
 
+# Scan for ALL BLE devices (useful if Furbies are in F2F mode)
+python -m pyfluff.cli scan --all
+
+# Test connection to a specific Furby by MAC address
+python -m pyfluff.cli connect AA:BB:CC:DD:EE:FF
+
 # Set antenna color to red
 python -m pyfluff.cli antenna --red 255 --green 0 --blue 0
+
+# Set antenna color for a specific Furby (by MAC address)
+python -m pyfluff.cli antenna --red 255 --green 0 --blue 0 --address AA:BB:CC:DD:EE:FF
 
 # Trigger a specific action
 python -m pyfluff.cli action --input 1 --index 0 --subindex 0 --specific 0
@@ -170,7 +179,91 @@ python -m pyfluff.cli load-dlc 2
 
 # Activate loaded DLC
 python -m pyfluff.cli activate-dlc
+
+# List all known Furbies from cache
+python -m pyfluff.cli list-known
+
+# Remove a Furby from cache
+python -m pyfluff.cli remove-known AA:BB:CC:DD:EE:FF
+
+# Clear all known Furbies from cache
+python -m pyfluff.cli clear-known --force
 ```
+
+### Known Furbies Cache
+
+PyFluff automatically maintains a cache of discovered Furbies in `known_furbies.json`. This cache stores:
+- **MAC addresses** of discovered Furbies
+- **Last known names** and name IDs (when set)
+- **Last seen timestamps**
+- **Firmware versions** (when available)
+- **BLE device names**
+
+The cache is automatically updated when:
+- Furbies are discovered during scanning
+- Successful connections are established
+- Names are changed via the API or CLI
+
+This makes it easy to reconnect to Furbies even when they're in F2F mode and not advertising.
+
+**Cache file format (`known_furbies.json`):**
+```json
+{
+  "furbies": {
+    "AA:BB:CC:DD:EE:FF": {
+      "address": "AA:BB:CC:DD:EE:FF",
+      "name": "Name ID 42",
+      "name_id": 42,
+      "device_name": "Furby",
+      "last_seen": 1729353600.0,
+      "firmware_revision": "1.0.0"
+    }
+  }
+}
+```
+
+### Connecting to Furbies in F2F (Furby-to-Furby) Mode
+
+When Furbies are communicating with each other (F2F mode), they may stop advertising their BLE presence, making them invisible to standard discovery scans. Here's how to connect to them:
+
+#### Option 1: Connect by MAC Address (Recommended)
+
+If you know your Furby's MAC address from a previous connection:
+
+**CLI:**
+```bash
+python -m pyfluff.cli connect AA:BB:CC:DD:EE:FF
+```
+
+**Python API:**
+```python
+furby = FurbyConnect()
+await furby.connect(address="AA:BB:CC:DD:EE:FF")
+```
+
+**Web Interface:**
+Enter the MAC address in the input field next to the "Connect" button.
+
+#### Option 2: Find MAC Address
+
+Scan for all BLE devices while your Furby is **not** in F2F mode:
+```bash
+python -m pyfluff.cli scan
+# Note down the MAC address
+```
+
+#### Option 3: Wake from F2F Mode
+
+Touch or shake the Furby to wake it from F2F communication, then scan normally.
+
+#### Understanding F2F Mode
+
+Two mysterious BLE characteristics (`dab91440` and `dab91441`) are suspected to handle Furby-to-Furby communication, allowing them to:
+- Exchange names and personal information
+- Synchronize actions like singing together
+- Coordinate behaviors
+
+**Note:** These F2F characteristics are not yet reverse-engineered or implemented in PyFluff. Connecting while Furbies are actively communicating may interrupt their interaction.
 
 ### Python API
 
@@ -180,7 +273,12 @@ from pyfluff.furby import FurbyConnect
 
 async def main():
     furby = FurbyConnect()
+    
+    # Option 1: Auto-discover and connect
     await furby.connect()
+    
+    # Option 2: Connect by MAC address (for F2F mode)
+    await furby.connect(address="AA:BB:CC:DD:EE:FF")
     
     # Set antenna color to red
     await furby.set_antenna_color(255, 0, 0)

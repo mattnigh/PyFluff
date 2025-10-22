@@ -15,6 +15,7 @@ from rich.live import Live
 from rich.panel import Panel
 
 from pyfluff.furby import FurbyConnect
+from pyfluff.furby_cache import FurbyCache
 from pyfluff.dlc import DLCManager
 
 app = typer.Typer(help="PyFluff - Control Furby Connect from the command line")
@@ -28,18 +29,21 @@ logging.basicConfig(
 
 
 @app.command()
-def scan(timeout: float = 10.0) -> None:
+def scan(
+    timeout: float = 10.0,
+    all: bool = typer.Option(False, "--all", help="Show all BLE devices, not just Furbies"),
+) -> None:
     """Scan for nearby Furby devices."""
 
     async def _scan() -> None:
-        with console.status("[bold green]Scanning for Furby devices..."):
-            devices = await FurbyConnect.discover(timeout=timeout)
+        with console.status("[bold green]Scanning for BLE devices..."):
+            devices = await FurbyConnect.discover(timeout=timeout, show_all=all)
 
         if not devices:
-            console.print("[red]No Furby devices found[/red]")
+            console.print("[red]No devices found[/red]")
             return
 
-        table = Table(title="Found Furby Devices")
+        table = Table(title="Found BLE Devices" if all else "Found Furby Devices")
         table.add_column("Name", style="cyan")
         table.add_column("Address", style="magenta")
         table.add_column("RSSI", style="green")
@@ -52,16 +56,46 @@ def scan(timeout: float = 10.0) -> None:
             )
 
         console.print(table)
+        
+        if not all and len(devices) == 0:
+            console.print("\n[yellow]💡 Tip: Furbies in F2F mode may not advertise.[/yellow]")
+            console.print("[yellow]   Try: pyfluff scan --all[/yellow]")
+            console.print("[yellow]   Or connect directly by MAC address if known[/yellow]")
 
     asyncio.run(_scan())
 
 
 @app.command()
-def info() -> None:
+def connect(
+    address: str = typer.Argument(..., help="MAC address of Furby to connect to"),
+    retries: int = typer.Option(3, "--retries", "-r", help="Number of connection attempts"),
+    timeout: float = typer.Option(15.0, "--timeout", "-t", help="Timeout per attempt in seconds"),
+) -> None:
+    """Test connection to a specific Furby by MAC address."""
+
+    async def _connect() -> None:
+        with console.status(f"[bold green]Connecting to Furby at {address}..."):
+            furby = FurbyConnect()
+            try:
+                await furby.connect(address=address, timeout=timeout, retries=retries)
+                console.print(f"[green]✓[/green] Successfully connected to Furby at {address}")
+                await furby.disconnect()
+            except Exception as e:
+                console.print(f"[red]✗[/red] Connection failed: {e}")
+                raise typer.Exit(1)
+
+    asyncio.run(_connect())
+
+
+@app.command()
+def info(
+    address: str = typer.Option(None, "--address", "-a", help="MAC address to connect to directly"),
+) -> None:
     """Get information about connected Furby."""
 
     async def _info() -> None:
         async with FurbyConnect() as furby:
+            await furby.connect(address=address)
             with console.status("[bold green]Reading device information..."):
                 device_info = await furby.get_device_info()
 
@@ -92,11 +126,13 @@ def antenna(
     red: int = typer.Option(255, help="Red channel (0-255)"),
     green: int = typer.Option(0, help="Green channel (0-255)"),
     blue: int = typer.Option(0, help="Blue channel (0-255)"),
+    address: str = typer.Option(None, "--address", "-a", help="MAC address to connect to directly"),
 ) -> None:
     """Set antenna LED color."""
 
     async def _antenna() -> None:
         async with FurbyConnect() as furby:
+            await furby.connect(address=address)
             await furby.set_antenna_color(red, green, blue)
             console.print(f"[green]✓[/green] Antenna set to RGB({red}, {green}, {blue})")
 
@@ -238,6 +274,88 @@ def activate_dlc() -> None:
             console.print("[green]✓[/green] DLC activated")
 
     asyncio.run(_activate())
+
+
+@app.command()
+def list_known(cache_file: str = typer.Option("known_furbies.json", help="Cache file path")) -> None:
+    """List all known Furby devices from cache."""
+    try:
+        cache = FurbyCache(cache_file)
+        furbies = cache.get_all()
+
+        if not furbies:
+            console.print("[yellow]No known Furbies in cache[/yellow]")
+            return
+
+        table = Table(title=f"Known Furby Devices ({len(furbies)})")
+        table.add_column("Address", style="cyan")
+        table.add_column("Name", style="magenta")
+        table.add_column("Device Name", style="green")
+        table.add_column("Last Seen", style="yellow")
+        table.add_column("Firmware", style="blue")
+
+        for furby in furbies:
+            from datetime import datetime
+            last_seen = datetime.fromtimestamp(furby.last_seen).strftime("%Y-%m-%d %H:%M:%S")
+            table.add_row(
+                furby.address,
+                furby.name or "N/A",
+                furby.device_name or "N/A",
+                last_seen,
+                furby.firmware_revision or "N/A",
+            )
+
+        console.print(table)
+
+    except Exception as e:
+        console.print(f"[red]Failed to read cache: {e}[/red]")
+        raise typer.Exit(1)
+
+
+@app.command()
+def remove_known(
+    address: str = typer.Argument(..., help="MAC address to remove"),
+    cache_file: str = typer.Option("known_furbies.json", help="Cache file path"),
+) -> None:
+    """Remove a Furby from the known devices cache."""
+    try:
+        cache = FurbyCache(cache_file)
+        if cache.remove(address):
+            console.print(f"[green]✓[/green] Removed {address} from cache")
+        else:
+            console.print(f"[yellow]Furby {address} not found in cache[/yellow]")
+            raise typer.Exit(1)
+    except Exception as e:
+        console.print(f"[red]Failed to remove from cache: {e}[/red]")
+        raise typer.Exit(1)
+
+
+@app.command()
+def clear_known(
+    cache_file: str = typer.Option("known_furbies.json", help="Cache file path"),
+    force: bool = typer.Option(False, "--force", "-f", help="Skip confirmation"),
+) -> None:
+    """Clear all known Furby devices from cache."""
+    try:
+        cache = FurbyCache(cache_file)
+        count = len(cache.get_all())
+
+        if count == 0:
+            console.print("[yellow]Cache is already empty[/yellow]")
+            return
+
+        if not force:
+            confirm = typer.confirm(f"Remove all {count} Furby device(s) from cache?")
+            if not confirm:
+                console.print("[yellow]Cancelled[/yellow]")
+                return
+
+        cache.clear()
+        console.print(f"[green]✓[/green] Cleared {count} device(s) from cache")
+
+    except Exception as e:
+        console.print(f"[red]Failed to clear cache: {e}[/red]")
+        raise typer.Exit(1)
 
 
 if __name__ == "__main__":

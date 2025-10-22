@@ -84,6 +84,55 @@ body::before {
 .connection-controls {
     display: flex;
     gap: 0.5rem;
+    align-items: center;
+}
+
+.furby-select {
+    padding: 0.35rem 0.65rem;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    min-width: 180px;
+    cursor: pointer;
+}
+
+.furby-select:hover {
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+.furby-select:focus {
+    outline: none;
+    border-color: rgba(139, 92, 246, 0.8);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.mac-input {
+    padding: 0.35rem 0.65rem;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    font-size: 0.85rem;
+    font-family: 'Courier New', monospace;
+    transition: all 0.2s;
+    width: 140px;
+}
+
+.mac-input:hover {
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+.mac-input:focus {
+    outline: none;
+    border-color: rgba(139, 92, 246, 0.8);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.mac-input::placeholder {
+    color: rgba(0, 0, 0, 0.4);
 }
 
 .logo {
