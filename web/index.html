@@ -151,6 +151,22 @@
                 </section>
             </div>
 
+            <!-- Furby Songs Section -->
+            <section class="card card-compact card-full-width">
+                <h2>🎵 Furby Songs</h2>
+                <p class="song-description">Make Furby sing! Select from all available songs and musical actions.</p>
+                <div class="songs-controls">
+                    <button id="btn-random-song" class="btn btn-primary">Play Random Song</button>
+                    <select id="song-selector" class="song-selector">
+                        <option value="">Select a song...</option>
+                    </select>
+                    <button id="btn-play-song" class="btn btn-secondary">Play Selected</button>
+                </div>
+                <div id="song-display" class="song-display">
+                    <div class="song-info" id="song-info">Select a song to play!</div>
+                </div>
+            </section>
+
             <!-- Log -->
             <section class="card card-compact card-full-width">
                 <h2>Log</h2>
@@ -162,6 +178,7 @@
     <script id="action-data" type="application/json">[]</script>
     <script src="/static/actions.js"></script>
     <script src="/static/names.js"></script>
+    <script src="/static/songs.js"></script>
     <script src="/static/app.js"></script>
 </body>
 </html>

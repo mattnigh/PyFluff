@@ -17,7 +17,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from pyfluff.furby import FurbyConnect
 from pyfluff.furby_cache import FurbyCache
-from pyfluff.dlc import DLCManager
 from pyfluff.models import (
     ActionSequence,
     ActionList,
@@ -443,68 +442,6 @@ async def set_mood(mood: MoodUpdate) -> CommandResponse:
         success=True,
         message=f"Mood {mood.type} {'set to' if set_absolute else 'increased by'} {mood.value}",
     )
-
-
-@app.post("/dlc/upload", response_model=CommandResponse)
-async def upload_dlc(file: UploadFile, slot: int = 2) -> CommandResponse:
-    """Upload a DLC file to Furby."""
-    fb = get_furby()
-
-    # Save uploaded file temporarily
-    import tempfile
-
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".dlc") as tmp:
-        content = await file.read()
-        tmp.write(content)
-        tmp_path = Path(tmp.name)
-
-    try:
-        dlc_manager = DLCManager(fb)
-        await dlc_manager.upload_dlc(tmp_path, slot)
-        return CommandResponse(
-            success=True, message=f"DLC uploaded to slot {slot}"
-        )
-    except Exception as e:
-        logger.error(f"DLC upload failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        tmp_path.unlink(missing_ok=True)
-
-
-@app.post("/dlc/load/{slot}", response_model=CommandResponse)
-async def load_dlc(slot: int) -> CommandResponse:
-    """Load DLC from slot."""
-    fb = get_furby()
-    dlc_manager = DLCManager(fb)
-    await dlc_manager.load_dlc(slot)
-    return CommandResponse(success=True, message=f"DLC loaded from slot {slot}")
-
-
-@app.post("/dlc/activate", response_model=CommandResponse)
-async def activate_dlc() -> CommandResponse:
-    """Activate loaded DLC."""
-    fb = get_furby()
-    dlc_manager = DLCManager(fb)
-    await dlc_manager.activate_dlc()
-    return CommandResponse(success=True, message="DLC activated")
-
-
-@app.post("/dlc/deactivate/{slot}", response_model=CommandResponse)
-async def deactivate_dlc(slot: int) -> CommandResponse:
-    """Deactivate DLC slot."""
-    fb = get_furby()
-    dlc_manager = DLCManager(fb)
-    await dlc_manager.deactivate_dlc(slot)
-    return CommandResponse(success=True, message=f"DLC slot {slot} deactivated")
-
-
-@app.post("/dlc/delete/{slot}", response_model=CommandResponse)
-async def delete_dlc(slot: int) -> CommandResponse:
-    """Delete DLC from slot."""
-    fb = get_furby()
-    dlc_manager = DLCManager(fb)
-    await dlc_manager.delete_dlc(slot)
-    return CommandResponse(success=True, message=f"DLC slot {slot} deleted")
 
 
 @app.websocket("/ws/logs")

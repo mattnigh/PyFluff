@@ -473,8 +473,111 @@ document.getElementById('btn-activate-dlc').addEventListener('click', async () =
 });
 */
 
+// Furby Songs functionality
+let currentSong = null;
+
+// Populate song selector on page load
+function populateSongSelector() {
+    const songSelector = document.getElementById('song-selector');
+    const songs = getAllSongs();
+    const categories = getSongCategories();
+    
+    // Clear existing options except first one
+    while (songSelector.options.length > 1) {
+        songSelector.remove(1);
+    }
+    
+    // Group songs by category
+    categories.forEach(category => {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = category;
+        
+        const categorySongs = getSongsByCategory(category);
+        categorySongs.forEach(song => {
+            const option = document.createElement('option');
+            option.value = song.name;
+            option.textContent = song.name;
+            optgroup.appendChild(option);
+        });
+        
+        songSelector.appendChild(optgroup);
+    });
+}
+
+async function playSong(song) {
+    currentSong = song;
+    const songDisplay = document.getElementById('song-display');
+    const songInfo = document.getElementById('song-info');
+    
+    // Show song info
+    songInfo.innerHTML = `
+        <strong>${song.name}</strong><br>
+        <em>${song.description}</em><br>
+        <small>Category: ${song.category}</small>
+    `;
+    
+    songDisplay.classList.add('playing');
+    
+    log(`Playing: ${song.name}`, 'info');
+    
+    try {
+        // If it's a single action, use the action endpoint
+        if (song.sequence.length === 1) {
+            const action = song.sequence[0];
+            const result = await apiCall('/action', 'POST', {
+                input: action.input,
+                index: action.index,
+                subindex: action.subindex,
+                specific: action.specific
+            });
+            log(`Song complete!`, 'success');
+        } else {
+            // If it's a sequence, use the sequence endpoint
+            const result = await apiCall('/actions/sequence', 'POST', {
+                actions: song.sequence,
+                delay: song.delay
+            });
+            log(`Song complete!`, 'success');
+        }
+        
+        setTimeout(() => {
+            songDisplay.classList.remove('playing');
+        }, 500);
+        
+    } catch (error) {
+        log(`Failed to play song: ${error.message}`, 'error');
+        songDisplay.classList.remove('playing');
+    }
+}
+
+// Random song button
+document.getElementById('btn-random-song').addEventListener('click', async () => {
+    const songs = getAllSongs();
+    const song = songs[Math.floor(Math.random() * songs.length)];
+    await playSong(song);
+});
+
+// Play selected song button
+document.getElementById('btn-play-song').addEventListener('click', async () => {
+    const songSelector = document.getElementById('song-selector');
+    const selectedName = songSelector.value;
+    
+    if (!selectedName) {
+        log('Please select a song first!', 'error');
+        return;
+    }
+    
+    const song = getSongByName(selectedName);
+    if (song) {
+        await playSong(song);
+    } else {
+        log('Song not found', 'error');
+    }
+});
+
 // Initialize
 updateStatus();
+populateSongSelector();
 loadKnownFurbies(); // Load known Furbies dropdown
 setInterval(updateStatus, 10000); // Update status every 10 seconds
 updateColorMemoryDisplay(); // Display random initial colors in memory slots
