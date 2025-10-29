@@ -75,6 +75,19 @@ asyncio.run(activate_dlc())
 
 After this, Furby's debug screen should show a `3` for the respective slot. The actions / songs in the DLC file should now be available through action input `75`, e.g. input 75, index 0, subindex 0 and specific 0. See [Action Sequences](actions.md) for information on how to trigger those songs and reactions.
 
+## DLC Songs in the Web Interface
+
+PyFluff's web interface includes a "Furby Songs" section that provides easy access to all available songs, including DLC songs. Once you have DLC content installed on your Furby:
+
+1. Navigate to the web interface at http://localhost:8080
+2. Scroll to the "🎵 Furby Songs" section
+3. Select a DLC song from the dropdown (they are listed under the "DLC Songs" category)
+4. Click "Play Selected" to make your Furby perform the DLC song
+
+The DLC songs use action input `75` with various index and specific values to access different DLC video reactions and songs that were originally available through the Furby Connect World app.
+
+**Note:** DLC songs will only work if you have compatible DLC content installed on your Furby. Without DLC installed, these actions may not produce any response.
+
 ## Using the CLI
 
 PyFluff also provides a CLI interface for DLC management:
