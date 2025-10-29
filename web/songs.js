@@ -275,6 +275,115 @@ const FURBY_SONGS = [
         sequence: [{ input: 7, index: 0, subindex: 0, specific: 4 }],
         delay: 1.0
     },
+
+    // DLC Songs (Input 75 - App Videos)
+    // These songs vary based on what DLC content is installed on the Furby
+    // Default DLC songs from the Furby Connect World app
+    {
+        name: "DLC Song 1",
+        category: "DLC Songs",
+        description: "App video song (requires DLC)",
+        sequence: [{ input: 75, index: 0, subindex: 0, specific: 0 }],
+        delay: 1.0
+    },
+    {
+        name: "DLC Song 2",
+        category: "DLC Songs",
+        description: "App video song (requires DLC)",
+        sequence: [{ input: 75, index: 0, subindex: 0, specific: 1 }],
+        delay: 1.0
+    },
+    {
+        name: "DLC Song 3",
+        category: "DLC Songs",
+        description: "App video song (requires DLC)",
+        sequence: [{ input: 75, index: 0, subindex: 0, specific: 2 }],
+        delay: 1.0
+    },
+    {
+        name: "DLC Song 4",
+        category: "DLC Songs",
+        description: "App video song (requires DLC)",
+        sequence: [{ input: 75, index: 0, subindex: 0, specific: 3 }],
+        delay: 1.0
+    },
+    {
+        name: "DLC Song 5",
+        category: "DLC Songs",
+        description: "App video song (requires DLC)",
+        sequence: [{ input: 75, index: 0, subindex: 0, specific: 4 }],
+        delay: 1.0
+    },
+    {
+        name: "DLC Song 6",
+        category: "DLC Songs",
+        description: "App video song (requires DLC)",
+        sequence: [{ input: 75, index: 0, subindex: 0, specific: 5 }],
+        delay: 1.0
+    },
+    {
+        name: "DLC Song 7",
+        category: "DLC Songs",
+        description: "App video song (requires DLC)",
+        sequence: [{ input: 75, index: 0, subindex: 0, specific: 6 }],
+        delay: 1.0
+    },
+    {
+        name: "DLC Song 8",
+        category: "DLC Songs",
+        description: "App video song (requires DLC)",
+        sequence: [{ input: 75, index: 0, subindex: 0, specific: 7 }],
+        delay: 1.0
+    },
+    {
+        name: "DLC Song 9",
+        category: "DLC Songs",
+        description: "App video song (requires DLC)",
+        sequence: [{ input: 75, index: 0, subindex: 0, specific: 8 }],
+        delay: 1.0
+    },
+    {
+        name: "DLC Song 10",
+        category: "DLC Songs",
+        description: "App video song (requires DLC)",
+        sequence: [{ input: 75, index: 0, subindex: 0, specific: 9 }],
+        delay: 1.0
+    },
+    {
+        name: "DLC Video 1 (Index 1)",
+        category: "DLC Songs",
+        description: "App video song variation (requires DLC)",
+        sequence: [{ input: 75, index: 1, subindex: 0, specific: 0 }],
+        delay: 1.0
+    },
+    {
+        name: "DLC Video 2 (Index 1)",
+        category: "DLC Songs",
+        description: "App video song variation (requires DLC)",
+        sequence: [{ input: 75, index: 1, subindex: 0, specific: 1 }],
+        delay: 1.0
+    },
+    {
+        name: "DLC Video 3 (Index 1)",
+        category: "DLC Songs",
+        description: "App video song variation (requires DLC)",
+        sequence: [{ input: 75, index: 1, subindex: 0, specific: 2 }],
+        delay: 1.0
+    },
+    {
+        name: "DLC Video 4 (Index 1)",
+        category: "DLC Songs",
+        description: "App video song variation (requires DLC)",
+        sequence: [{ input: 75, index: 1, subindex: 0, specific: 3 }],
+        delay: 1.0
+    },
+    {
+        name: "DLC Video 5 (Index 1)",
+        category: "DLC Songs",
+        description: "App video song variation (requires DLC)",
+        sequence: [{ input: 75, index: 1, subindex: 0, specific: 4 }],
+        delay: 1.0
+    },
 ];
 
 // Get all songs
